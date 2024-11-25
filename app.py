@@ -1,11 +1,9 @@
 from flask import Flask, request, jsonify
-from flask_mysqldb import MySQL
 from datetime import datetime
-from database import initialize_mysql
+from database import create_app
 
-app = Flask(__name__)
-
-mysql = initialize_mysql(app)
+app = create_app()
+mongo_client = app.mongo_client
 
 
 # Endpoint para adicionar um novo vídeo
