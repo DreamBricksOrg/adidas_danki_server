@@ -1,0 +1,12 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": ["link"],
+    "properties": {
+      "link": {
+        "bsonType": "string",
+        "description": "must be a string and is required"
+      }
+    }
+  }
+}

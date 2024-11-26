@@ -1,0 +1,15 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": ["Shoes"],
+    "properties": {
+      "Shoes": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "objectId"
+        },
+        "description": "must be an array of objectIds and is required"
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": ["model", "color", "collection", "DataSheet", "Pinterest", "Suggestion", "Store"],
+    "properties": {
+      "model": {
+        "bsonType": "string",
+        "description": "must be a string and is required"
+      },
+      "color": {
+        "bsonType": "string",
+        "description": "must be a string and is required"
+      },
+      "collection": {
+        "bsonType": "string",
+        "description": "must be a string and is required"
+      },
+      "code": {
+        "bsonType": "string",
+        "description": "must be a string and is optional"
+      },
+      "DataSheet": {
+        "bsonType": "objectId",
+        "description": "must be an objectId and is required"
+      },
+      "Pinterest": {
+        "bsonType": "objectId",
+        "description": "must be an objectId and is required"
+      },
+      "Suggestion": {
+        "bsonType": "objectId",
+        "description": "must be an objectId and is required"
+      },
+      "Store": {
+        "bsonType": "objectId",
+        "description": "must be an objectId and is required"
+      }
+    }
+  }
+}
