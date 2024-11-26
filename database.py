@@ -2,42 +2,112 @@ from flask import Flask
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import logging
+import json
+
+# Set up logging to provide insights into the application's operation, both during development and after deployment
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def load_schema(schema_file):
+    """
+    Load a JSON schema from a file to enforce structure in MongoDB collections.
+    
+    Args:
+        schema_file (str): Path to the JSON schema file.
+    
+    Returns:
+        dict: The loaded schema as a dictionary.
+    
+    Raises:
+        FileNotFoundError: If the JSON file could not be found.
+        json.JSONDecodeError: If there is an error in decoding the JSON.
+    """
+    try:
+        with open(schema_file, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError as e:
+        logger.error(f"Schema file not found: {schema_file}")
+        raise e
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON from {schema_file}")
+        raise e
+
+def ensure_collection_exists(db, collection_name):
+    """
+    Ensures that a collection exists in the database before applying a schema validator.
+    
+    Args:
+        db: The MongoDB database connection object.
+        collection_name (str): The name of the collection to check or create.
+    """
+    if collection_name not in db.list_collection_names():
+        db.create_collection(collection_name)
+        logger.info(f"Created new collection: {collection_name}")
+    else:
+        logger.info(f"Collection {collection_name} already exists.")
+
+def apply_schemas(db):
+    """
+    Apply defined JSON schemas to MongoDB collections as validators to ensure data consistency.
+
+    Args:
+        db: The database connection object.
+    """
+    try:
+        # Define schemas and their corresponding collections
+        schemas = {
+            "shoes": "schemas/shoes.json",
+            "data_sheet": "schemas/dataSheet.json",
+            "suggestion": "schemas/suggestion.json",
+            "store": "schemas/store.json",
+            "pinterest": "schemas/pinterest.json",
+            "tag": "schemas/tag.json"
+        }
+
+        # Iterate over each collection and schema
+        for collection, schema_path in schemas.items():
+            # Ensure the collection exists
+            ensure_collection_exists(db, collection)
+
+            # Load and apply the schema
+            schema = load_schema(schema_path)
+            db.command('collMod', collection, validator={"$jsonSchema": schema})
+            logger.info(f"{collection.capitalize()} schema applied successfully.")
+
+    except Exception as e:
+        logger.error(f"Failed to apply schemas: {str(e)}")
+        raise
+
 
 def create_app():
     """
-    Cria e configura uma instância do aplicativo Flask, incluindo a conexão com o MongoDB.
+    Create a Flask application and configure it with a MongoDB connection.
     
     Returns:
-        Flask: A instância do aplicativo Flask configurada com uma conexão ao MongoDB.
+        Flask: The configured Flask application with a MongoDB connection.
     """
-    # Inicializa uma nova aplicação Flask
     app = Flask(__name__)
-
-    # Define a URI de conexão com o MongoDB obtida de configuração ou ambiente seguro
+    # MongoDB URI configuration from environment or default setup
     app.config['MONGO_URI'] = "mongodb+srv://guilhermebegotti:n5BHAuwiY1j3FxaF@dbcluster0.qkxkj.mongodb.net/?retryWrites=true&w=majority&appName=DBCluster0"
 
-    # Configuração do sistema de logging para registrar informações e erros
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
+    # Initialize MongoDB client
+    mongo_client = MongoClient(app.config['MONGO_URI'], server_api=ServerApi('1'))
     try:
-        # Cria uma instância do cliente MongoDB com especificações de API de servidor para garantir compatibilidade
-        mongo_client = MongoClient(app.config['MONGO_URI'], server_api=ServerApi('1'))
-        # Realiza um comando de 'ping' para testar a conexão com o banco de dados
+        # Test the MongoDB connection
         mongo_client.admin.command('ping')
-        # Registra no log a conexão bem-sucedida com o banco de dados
         logger.info("Connected to MongoDB successfully!")
     except Exception as e:
-        # Registra no log o fracasso na tentativa de conexão, incluindo a mensagem de erro
         logger.error(f"Failed to connect to MongoDB: {e}")
-        # Define o cliente MongoDB como None se a conexão falhar
-        mongo_client = None
+        mongo_client = None  # Set client to None if connection fails
 
-    # Armazena o cliente MongoDB na aplicação para ser acessado por outras partes do aplicativo
+    # Setup MongoDB in the Flask app context
+    db = mongo_client['danki-adidas']
+    apply_schemas(db)
+
     app.mongo_client = mongo_client
+    app.db = db
     return app
 
-# # Uso típico para inicializar o aplicativo com acesso ao MongoDB configurado
+# # This section is for running the Flask app
 # if __name__ == "__main__":
 #     app = create_app()
-#     # O aplicativo pode agora ser iniciado ou utilizado com um cliente MongoDB integrado
