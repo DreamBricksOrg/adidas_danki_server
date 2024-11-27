@@ -11,27 +11,27 @@ Collections: `shoes`, `data_sheet`, `suggestion`, `store`, `pinterest`, `tag`, `
 - **Endpoint**: `/<collection_name>`
 - **Request Body**:
 
-    ```json
-    {
-        "field1": "value",
-        "field2": "value"
-    }
-    ```
+  ```json
+  {
+    "field1": "value",
+    "field2": "value"
+  }
+  ```
 
 - **Response**:
 - Success: `201 Created`
-        ```json
-        {
-            "message": "Document created",
-            "id": "ObjectId of the created document"
-        }
-        ```
+  `json
+      {
+          "message": "Document created",
+          "id": "ObjectId of the created document"
+      }
+      `
 - Error: `400 Bad Request`
-        ```json
-        {
-            "error": "No data provided"
-        }
-        ```
+  `json
+      {
+          "error": "No data provided"
+      }
+      `
 
 ### Get All Documents
 
@@ -39,12 +39,12 @@ Collections: `shoes`, `data_sheet`, `suggestion`, `store`, `pinterest`, `tag`, `
 - **Endpoint**: `/<collection_name>`
 - **Response**:
 - Success: `200 OK`
-        ```json
-        [
-            { "field1": "value1", "_id": "ObjectId1" },
-            { "field2": "value2", "_id": "ObjectId2" }
-        ]
-        ```
+  `json
+      [
+          { "field1": "value1", "_id": "ObjectId1" },
+          { "field2": "value2", "_id": "ObjectId2" }
+      ]
+      `
 - Error: `500 Internal Server Error`
 
 ### Get a Document by ID
@@ -53,12 +53,12 @@ Collections: `shoes`, `data_sheet`, `suggestion`, `store`, `pinterest`, `tag`, `
 - **Endpoint**: `/<collection_name>/<id>`
 - **Response**:
 - Success: `200 OK`
-        ```json
-        {
-            "field1": "value1",
-            "_id": "ObjectId"
-        }
-        ```
+  `json
+      {
+          "field1": "value1",
+          "_id": "ObjectId"
+      }
+      `
 - Error: `404 Not Found`
 
 ### Update a Document by ID
@@ -67,19 +67,19 @@ Collections: `shoes`, `data_sheet`, `suggestion`, `store`, `pinterest`, `tag`, `
 - **Endpoint**: `/<collection_name>/<id>`
 - **Request Body**:
 
-    ```json
-    {
-        "field1": "updated_value"
-    }
-    ```
+  ```json
+  {
+    "field1": "updated_value"
+  }
+  ```
 
 - **Response**:
 - Success: `200 OK`
-        ```json
-        {
-            "message": "Document updated"
-        }
-        ```
+  `json
+      {
+          "message": "Document updated"
+      }
+      `
 - Error: `404 Not Found`
 
 ### Delete a Document by ID
@@ -88,11 +88,11 @@ Collections: `shoes`, `data_sheet`, `suggestion`, `store`, `pinterest`, `tag`, `
 - **Endpoint**: `/<collection_name>/<id>`
 - **Response**:
 - Success: `200 OK`
-        ```json
-        {
-            "message": "Document deleted"
-        }
-        ```
+  `json
+      {
+          "message": "Document deleted"
+      }
+      `
 - Error: `404 Not Found`
 
 ## Aggregation Endpoints
@@ -104,16 +104,16 @@ Collections: `shoes`, `data_sheet`, `suggestion`, `store`, `pinterest`, `tag`, `
 - **Description**: Retrieves all shoes with their associated image links.
 - **Response**:
 - Success: `200 OK`
-        ```json
-        [
-            {
-                "id": "ObjectId",
-                "model": "Shoe model",
-                "code": "Shoe code",
-                "images": ["image1.jpg", "image2.jpg"]
-            }
-        ]
-        ```
+  `json
+      [
+          {
+              "id": "ObjectId",
+              "model": "Shoe model",
+              "code": "Shoe code",
+              "images": ["image1.jpg", "image2.jpg"]
+          }
+      ]
+      `
 - Error: `500 Internal Server Error`
 
 ### Shoe with Pinterest
@@ -126,14 +126,14 @@ Collections: `shoes`, `data_sheet`, `suggestion`, `store`, `pinterest`, `tag`, `
 - `model` (optional): The model of the shoe.
 - **Response**:
 - Success: `200 OK`
-        ```json
-        {
-            "id": "ObjectId",
-            "model": "Shoe model",
-            "code": "Shoe code",
-            "pinterest": "Pinterest link"
-        }
-        ```
+  `json
+      {
+          "id": "ObjectId",
+          "model": "Shoe model",
+          "code": "Shoe code",
+          "pinterest": "Pinterest link"
+      }
+      `
 - Error: `400 Bad Request` or `404 Not Found`
 
 ### Shoe Details
@@ -146,21 +146,21 @@ Collections: `shoes`, `data_sheet`, `suggestion`, `store`, `pinterest`, `tag`, `
 - `model` (optional): The model of the shoe.
 - **Response**:
 - Success: `200 OK`
-        ```json
-        {
-            "id": "ObjectId",
-            "model": "Shoe model",
-            "code": "Shoe code",
-            "color": "Shoe color",
-            "collection": "Collection name",
-            "images": ["image1.jpg", "image2.jpg"],
-            "pinterest": "Pinterest link",
-            "data_sheet": { "field": "value" },
-            "store": "Store address",
-            "suggestion": [{ "id": "ObjectId" }],
-            "tags": ["tag1", "tag2"]
-        }
-        ```
+  `json
+      {
+          "id": "ObjectId",
+          "model": "Shoe model",
+          "code": "Shoe code",
+          "color": "Shoe color",
+          "collection": "Collection name",
+          "images": ["image1.jpg", "image2.jpg"],
+          "pinterest": "Pinterest link",
+          "data_sheet": { "field": "value" },
+          "store": "Store address",
+          "suggestion": [{ "id": "ObjectId" }],
+          "tags": ["tag1", "tag2"]
+      }
+      `
 - Error: `400 Bad Request` or `404 Not Found`
 
 ## Instructions for Testing
