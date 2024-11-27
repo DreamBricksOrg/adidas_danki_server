@@ -261,6 +261,146 @@ def get_shoe_with_pinterest():
         logger.error(f"Failed to retrieve shoe with Pinterest link: {e}")
         return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
 
+@app.route('/shoe-details', methods=['GET'])
+def get_shoe_details():
+    """
+    Retrieves detailed information about a single shoe based on its ID, model, or code.
+
+    Query Parameters:
+        - id: ObjectId of the shoe (as a string).
+        - model: The model name of the shoe.
+        - code: The code of the shoe.
+
+    Returns:
+        JSON response with detailed shoe information or an error message.
+    """
+    logger.info("Starting aggregation for a single shoe's detailed information.")
+    try:
+        # Reference to the 'shoes' collection
+        shoes_collection = db['shoes']
+
+        # Get query parameters
+        shoe_id = request.args.get('id')
+        model = request.args.get('model')
+        code = request.args.get('code')
+
+        # Build the filter for the query
+        query = {}
+        if shoe_id:
+            try:
+                query["_id"] = ObjectId(shoe_id)
+            except Exception as e:
+                return jsonify({"error": "Invalid ObjectId format for 'id'", "details": str(e)}), 400
+        elif model:
+            query["model"] = model
+        elif code:
+            query["code"] = code
+        else:
+            return jsonify({"error": "No valid query parameter provided (id, model, or code)."}), 400
+
+        # Aggregation pipeline to join all related collections for a single shoe
+        pipeline = [
+            {"$match": query},  # Match the specific shoe
+            {
+                "$lookup": {
+                    "from": "images",
+                    "localField": "_id",
+                    "foreignField": "Shoe",
+                    "as": "images"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "pinterest",
+                    "localField": "_id",
+                    "foreignField": "Shoe",
+                    "as": "pinterest"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "data_sheet",  # Collection to join
+                    "let": { "shoeId": "$_id" },  # Define a variable for the current shoe's _id
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": { "$in": ["$$shoeId", "$Shoes"] }  # Check if shoeId is in the Shoes array
+                            }
+                        }
+                    ],
+                    "as": "data_sheet"  # Output field for matched documents
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "store",
+                    "localField": "_id",
+                    "foreignField": "Shoe",
+                    "as": "store"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "suggestion",  # Collection to join
+                    "let": { "shoeId": "$_id" },  # Define a variable for the current shoe's _id
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": { "$in": ["$$shoeId", "$Shoes"] }  # Check if shoeId is in the Shoes array
+                            }
+                        }
+                    ],
+                    "as": "suggestion"  # Output field for matched documents
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "tag",
+                    "localField": "_id",
+                    "foreignField": "Shoes",
+                    "as": "tags"
+                }
+            },
+            {
+                "$project": {
+                    "id": "$_id",
+                    "model": 1,
+                    "code": 1,
+                    "color": 1,
+                    "collection": 1,
+                    "images": "$images.links",
+                    "pinterest": {
+                        "$arrayElemAt": ["$pinterest.link", 0]
+                    },
+                    "data_sheet": {
+                        "$arrayElemAt": ["$data_sheet", 0]
+                    },
+                    "store": {
+                        "$arrayElemAt": ["$store.address", 0]
+                    },
+                    "suggestion": "$suggestion",
+                    "tags": "$tags.tag_id"
+                }
+            }
+        ]
+
+        # Execute the aggregation
+        results = list(shoes_collection.aggregate(pipeline))
+
+        if not results:
+            return jsonify({"error": "Shoe not found with the given criteria."}), 404
+
+        # Serialize the single result with bson.json_util.dumps
+        json_result = dumps(results[0])
+
+        logger.info("Aggregation successful for the requested shoe.")
+        return json_result, 200
+    except Exception as e:
+        logger.error(f"Failed to aggregate shoe details: {e}")
+        return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
+
+
+
 # Dynamically create CRUD routes for all specified collections
 for collection_name in collections:
     create_crud_routes(collection_name)
