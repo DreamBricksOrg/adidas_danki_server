@@ -1,6 +1,7 @@
 # Import necessary modules for creating a Flask application with MongoDB
 from flask import request, jsonify
 from bson import ObjectId
+from bson.json_util import dumps
 from database import create_app
 import logging
 
@@ -131,6 +132,53 @@ def create_crud_routes(collection_name):
             logger.error(f"Failed to delete document from {collection_name}: {e}")
             return jsonify({"error": str(e)}), 500
 
+@app.route('/shoes-with-images', methods=['GET'])
+def get_shoes_with_images():
+    """
+    Aggregates data from the 'shoes' and 'images' collections 
+    to provide a combined view of shoes with their image links.
+
+    Returns:
+        JSON response with a list of shoes, each including its id, model, code, and image links.
+    """
+    logger.info("Starting aggregation of shoes with their image links.")
+    try:
+        # Reference to the 'shoes' and 'images' collections
+        shoes_collection = db['shoes']
+
+        # Aggregation pipeline to join shoes with their respective images
+        pipeline = [
+            {
+                "$lookup": {
+                    "from": "images",           # Join with the 'images' collection
+                    "localField": "_id",        # Match '_id' in 'shoes'
+                    "foreignField": "Shoe",   # Match 'Shoe' in 'images'
+                    "as": "images"             # Output array of images
+                }
+            },
+            {
+                "$project": {
+                    "id": "$_id",              # Include the shoe ID
+                    "model": 1,                # Include the model
+                    "code": 1,                 # Include the code
+                    "images": "$images.links"  # Include the image links
+                }
+            }
+        ]
+
+        # Execute the aggregation
+        results = list(shoes_collection.aggregate(pipeline))
+
+        # Serialize results with bson.json_util.dumps
+        json_results = dumps(results)
+
+        logger.info(f"Aggregation successful. Retrieved {len(json_results)} shoes.")
+        return json_results, 200
+    except Exception as e:
+        logger.error(f"Failed to aggregate shoes with images: {e}")
+        return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
+
+
 # Dynamically create CRUD routes for all specified collections
 for collection_name in collections:
     create_crud_routes(collection_name)
@@ -138,4 +186,4 @@ for collection_name in collections:
 if __name__ == "__main__":
     # Run the Flask application
     logger.info("Starting Flask application...")
-    app.run(debug=False)
+    app.run(debug=True)
