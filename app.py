@@ -178,6 +178,88 @@ def get_shoes_with_images():
         logger.error(f"Failed to aggregate shoes with images: {e}")
         return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
 
+@app.route('/shoe-with-pinterest', methods=['GET'])
+def get_shoe_with_pinterest():
+    """
+    Retrieves a single shoe with its Pinterest link based on ObjectId, code, or model.
+    
+    Query Parameters:
+        - id: The ObjectId of the shoe.
+        - code: The code of the shoe.
+        - model: The model of the shoe.
+    
+    Returns:
+        JSON response with the shoe's id, model, code, and a single Pinterest link.
+    """
+    logger.info("Starting aggregation for a single shoe with its Pinterest link.")
+    try:
+        # Reference to the 'shoes' collection
+        shoes_collection = db['shoes']
+
+        # Retrieve query parameters
+        shoe_id = request.args.get('id')
+        shoe_code = request.args.get('code')
+        shoe_model = request.args.get('model')
+
+        # Build the match query dynamically
+        match_query = {}
+        if shoe_id:
+            try:
+                match_query['_id'] = ObjectId(shoe_id)
+            except Exception as e:
+                logger.error(f"Invalid ObjectId format: {shoe_id}. Error: {e}")
+                return jsonify({"error": "Invalid ObjectId format"}), 400
+        if shoe_code:
+            match_query['code'] = shoe_code
+        if shoe_model:
+            match_query['model'] = shoe_model
+
+        # Ensure at least one query parameter is provided
+        if not match_query:
+            return jsonify({"error": "You must provide at least one of 'id', 'code', or 'model'."}), 400
+
+        # Aggregation pipeline
+        pipeline = [
+            {"$match": match_query},  # Match the shoe based on the query
+            {
+                "$lookup": {
+                    "from": "pinterest",      # Join with the 'pinterest' collection
+                    "localField": "_id",      # Match '_id' in 'shoes'
+                    "foreignField": "Shoe",   # Match 'Shoe' in 'pinterest'
+                    "as": "pinterest"         # Output array of Pinterest links
+                }
+            },
+            {
+                "$unwind": {                   # Flatten the Pinterest array
+                    "path": "$pinterest",
+                    "preserveNullAndEmptyArrays": True  # Handle cases where no Pinterest document exists
+                }
+            },
+            {
+                "$project": {
+                    "id": "$_id",                   # Include the shoe ID
+                    "model": 1,                     # Include the model
+                    "code": 1,                      # Include the model
+                    "pinterest": "$pinterest.link"  # Directly include the link from Pinterest
+                }
+            }
+        ]
+
+        # Execute the aggregation
+        results = list(shoes_collection.aggregate(pipeline))
+
+        if not results:
+            return jsonify({"error": "Shoe not found or no Pinterest links available."}), 404
+
+        # Convert results to JSON using bson.json_util.dumps
+        json_results = dumps(results[0])
+
+        logger.info(f"Aggregation successful for shoe: {results[0]['id']}")
+        return json_results, 200
+
+    except Exception as e:
+        logger.error(f"Failed to retrieve shoe with Pinterest link: {e}")
+        return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
 
 # Dynamically create CRUD routes for all specified collections
 for collection_name in collections:
