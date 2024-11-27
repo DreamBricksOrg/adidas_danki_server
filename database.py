@@ -61,7 +61,8 @@ def apply_schemas(db):
             "suggestion": "schemas/suggestion.json",
             "store": "schemas/store.json",
             "pinterest": "schemas/pinterest.json",
-            "tag": "schemas/tag.json"
+            "tag": "schemas/tag.json",
+            "images": "schemas/images.json"
         }
 
         # Iterate over each collection and schema

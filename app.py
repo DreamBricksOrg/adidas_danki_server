@@ -13,7 +13,7 @@ app = create_app()
 db = app.db
 
 # List of collection names for which CRUD routes will be dynamically created
-collection_names = ["shoes", "data_sheet", "suggestion", "store", "pinterest", "tag"]
+collections = ["shoes", "data_sheet", "suggestion", "store", "pinterest", "tag", "images"]
 
 def convert_object_ids(data):
     """
@@ -132,7 +132,7 @@ def create_crud_routes(collection_name):
             return jsonify({"error": str(e)}), 500
 
 # Dynamically create CRUD routes for all specified collections
-for collection_name in collection_names:
+for collection_name in collections:
     create_crud_routes(collection_name)
 
 if __name__ == "__main__":
