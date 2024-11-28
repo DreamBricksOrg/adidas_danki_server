@@ -2,12 +2,45 @@
 from flask import request, jsonify
 from bson import ObjectId
 from bson.json_util import dumps
-from database import create_app
+from database import apply_schemas
+from flask import Flask
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 import logging
+import requests
 
 # Set up logging for tracking application operations
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def create_app():
+    """
+    Create a Flask application and configure it with a MongoDB connection.
+    
+    Returns:
+        Flask: The configured Flask application with a MongoDB connection.
+    """
+    app = Flask(__name__)
+    # MongoDB URI configuration from environment or default setup
+    app.config['MONGO_URI'] = "mongodb+srv://guilhermebegotti:n5BHAuwiY1j3FxaF@dbcluster0.qkxkj.mongodb.net/?retryWrites=true&w=majority&appName=DBCluster0"
+
+    # Initialize MongoDB client
+    mongo_client = MongoClient(app.config['MONGO_URI'], server_api=ServerApi('1'))
+    try:
+        # Test the MongoDB connection
+        mongo_client.admin.command('ping')
+        logger.info("Connected to MongoDB successfully!")
+    except Exception as e:
+        logger.error(f"Failed to connect to MongoDB: {e}")
+        mongo_client = None  # Set client to None if connection fails
+
+    # Setup MongoDB in the Flask app context
+    db = mongo_client['danki-adidas']
+    apply_schemas(db)
+
+    app.mongo_client = mongo_client
+    app.db = db
+    return app
 
 # Initialize the Flask application and MongoDB database from the database module
 app = create_app()
@@ -398,6 +431,96 @@ def get_shoe_details():
 # Dynamically create CRUD routes for all specified collections
 for collection_name in collections:
     create_crud_routes(collection_name)
+
+def fetch_pinterest_data(board_id, access_token):
+    """
+    Fetches media data from a Pinterest board using the Pinterest API.
+    
+    Args:
+        board_id (str): The unique identifier of the Pinterest board.
+        access_token (str): Access token to authenticate with the Pinterest API.
+    
+    Returns:
+        dict: Media data from the board, including image URLs, or None if the request fails.
+    """
+    url = f"https://api.pinterest.com/v5/boards/{board_id}"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    try:
+        # Make the API request to fetch board data
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        # Parse and return the media data
+        data = response.json()
+        return data.get("media", None)
+    except requests.RequestException as e:
+        # Log and return None if the request fails
+        logger.error(f"Failed to fetch Pinterest data: {e}")
+        return None
+
+@app.route('/add-pinterest-data', methods=['POST'])
+def add_pinterest_data():
+    """
+    API endpoint to add or update a Pinterest document for a specific shoe.
+    
+    The request must provide:
+    - "board_id": Pinterest board ID (required)
+    - "access_token": Pinterest API access token (required)
+    - "shoe_id", "code", or "model": Identifies the shoe to link with Pinterest data.
+
+    Returns:
+        JSON response indicating success or failure.
+    """
+    payload = request.json
+    board_id = payload.get("board_id")
+    access_token = payload.get("access_token")
+    shoe_id = payload.get("shoe_id")
+    code = payload.get("code")
+    model = payload.get("model")
+
+    # Validate the required parameters
+    if not (board_id and access_token):
+        return jsonify({"error": "board_id and access_token are required"}), 400
+
+    # Fetch media data from the Pinterest API
+    media_data = fetch_pinterest_data(board_id, access_token)
+    if not media_data:
+        return jsonify({"error": "Failed to fetch Pinterest data"}), 500
+
+    # Build the query to find the associated shoe
+    query = {}
+    if shoe_id:
+        query["_id"] = ObjectId(shoe_id)
+    elif code:
+        query["code"] = code
+    elif model:
+        query["model"] = model
+    else:
+        return jsonify({"error": "Provide shoe_id, code, or model to identify the shoe"}), 400
+
+    # Search for the shoe in the database
+    shoe = db['shoes'].find_one(query)
+    if not shoe:
+        return jsonify({"error": "Shoe not found"}), 404
+
+    # Prepare the Pinterest document to insert/update
+    pinterest_document = {
+        "Shoe": shoe["_id"],  # Link the Pinterest data to the shoe's ObjectId
+        "links": [media_data["image_cover_url"]] + media_data.get("pin_thumbnail_urls", [])
+    }
+
+    try:
+        # Update or insert the Pinterest document for the shoe
+        result = db['pinterest'].update_one(
+            {"Shoe": shoe["_id"]},  # Match by the shoe's ObjectId
+            {"$set": pinterest_document},  # Update the document fields
+            upsert=True  # Insert if no matching document is found
+        )
+        logger.info(f"Pinterest data added/updated for shoe {shoe['_id']}")
+        return jsonify({"message": "Pinterest data added/updated successfully", "result": str(result.upserted_id or shoe["_id"])}), 200
+    except Exception as e:
+        # Log and return an error response if the operation fails
+        logger.error(f"Failed to add/update Pinterest data: {e}")
+        return jsonify({"error": "Failed to add/update Pinterest data", "details": str(e)}), 500
 
 if __name__ == "__main__":
     # Run the Flask application

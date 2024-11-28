@@ -1,6 +1,3 @@
-from flask import Flask
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
 import logging
 import json
 
@@ -80,34 +77,34 @@ def apply_schemas(db):
         raise
 
 
-def create_app():
-    """
-    Create a Flask application and configure it with a MongoDB connection.
+# def create_app():
+#     """
+#     Create a Flask application and configure it with a MongoDB connection.
     
-    Returns:
-        Flask: The configured Flask application with a MongoDB connection.
-    """
-    app = Flask(__name__)
-    # MongoDB URI configuration from environment or default setup
-    app.config['MONGO_URI'] = "mongodb+srv://guilhermebegotti:n5BHAuwiY1j3FxaF@dbcluster0.qkxkj.mongodb.net/?retryWrites=true&w=majority&appName=DBCluster0"
+#     Returns:
+#         Flask: The configured Flask application with a MongoDB connection.
+#     """
+#     app = Flask(__name__)
+#     # MongoDB URI configuration from environment or default setup
+#     app.config['MONGO_URI'] = "mongodb+srv://guilhermebegotti:n5BHAuwiY1j3FxaF@dbcluster0.qkxkj.mongodb.net/?retryWrites=true&w=majority&appName=DBCluster0"
 
-    # Initialize MongoDB client
-    mongo_client = MongoClient(app.config['MONGO_URI'], server_api=ServerApi('1'))
-    try:
-        # Test the MongoDB connection
-        mongo_client.admin.command('ping')
-        logger.info("Connected to MongoDB successfully!")
-    except Exception as e:
-        logger.error(f"Failed to connect to MongoDB: {e}")
-        mongo_client = None  # Set client to None if connection fails
+#     # Initialize MongoDB client
+#     mongo_client = MongoClient(app.config['MONGO_URI'], server_api=ServerApi('1'))
+#     try:
+#         # Test the MongoDB connection
+#         mongo_client.admin.command('ping')
+#         logger.info("Connected to MongoDB successfully!")
+#     except Exception as e:
+#         logger.error(f"Failed to connect to MongoDB: {e}")
+#         mongo_client = None  # Set client to None if connection fails
 
-    # Setup MongoDB in the Flask app context
-    db = mongo_client['danki-adidas']
-    apply_schemas(db)
+#     # Setup MongoDB in the Flask app context
+#     db = mongo_client['danki-adidas']
+#     apply_schemas(db)
 
-    app.mongo_client = mongo_client
-    app.db = db
-    return app
+#     app.mongo_client = mongo_client
+#     app.db = db
+#     return app
 
 # # This section is for running the Flask app
 # if __name__ == "__main__":
