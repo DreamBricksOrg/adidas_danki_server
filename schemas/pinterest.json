@@ -1,14 +1,18 @@
 {
   "bsonType": "object",
-  "required": ["Shoe","link"],
+  "required": ["Shoe", "links"],
   "properties": {
     "Shoe": {
       "bsonType": "objectId",
       "description": "The ObjectId of the shoe associated with these Pinterest links"
     },
-    "link": {
-      "bsonType": "string",
-      "description": "must be a string and is required"
+    "links": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "string",
+        "description": "Each link must be a string"
+      },
+      "description": "List of Pinterest links associated with the shoe"
     }
   }
 }

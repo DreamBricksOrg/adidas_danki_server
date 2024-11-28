@@ -230,17 +230,11 @@ def get_shoe_with_pinterest():
                 }
             },
             {
-                "$unwind": {                   # Flatten the Pinterest array
-                    "path": "$pinterest",
-                    "preserveNullAndEmptyArrays": True  # Handle cases where no Pinterest document exists
-                }
-            },
-            {
                 "$project": {
                     "id": "$_id",                   # Include the shoe ID
                     "model": 1,                     # Include the model
                     "code": 1,                      # Include the model
-                    "pinterest": "$pinterest.link"  # Directly include the link from Pinterest
+                    "pinterest": "$pinterest.links"  # Directly include the link from Pinterest
                 }
             }
         ]
