@@ -12,6 +12,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import logging
 import requests
+from flask_cors import CORS
 
 # =======================================
 # Variables
@@ -59,6 +60,7 @@ def create_app():
 
 # Initialize the Flask application and MongoDB database from the database module
 app = create_app()
+CORS(app)
 db = app.db
 
 # =======================================
