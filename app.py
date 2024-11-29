@@ -313,8 +313,6 @@ def get_shoe_with_pinterest():
         logger.error(f"Failed to retrieve shoe with Pinterest links: {e}")
         return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
 
-
-# Atualizações no pipeline de /shoe-details
 @app.route('/shoe-details', methods=['GET'])
 def get_shoe_details():
     """
@@ -323,6 +321,8 @@ def get_shoe_details():
     logger.info("Starting aggregation for a single shoe's detailed information.")
     try:
         shoes_collection = db['shoes']
+        images_collection = db['images']
+        suggestions_collection = db['suggestion']
 
         shoe_id = request.args.get('id')
         model = request.args.get('model')
@@ -338,51 +338,56 @@ def get_shoe_details():
         else:
             return jsonify({"error": "No valid query parameter provided (id, model, or code)."}), 400
 
-        pipeline = [
-            {"$match": query},
-            {
-                "$lookup": {
-                    "from": "images",
-                    "localField": "_id",
-                    "foreignField": "shoeId",
-                    "as": "images"
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "pinterest",
-                    "localField": "_id",
-                    "foreignField": "shoeId",
-                    "as": "pinterest"
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "suggestion",
-                    "localField": "_id",
-                    "foreignField": "shoeId",
-                    "as": "suggestions"
-                }
-            },
-            {
-                "$project": {
-                    "id": "$_id",
-                    "model": 1,
-                    "title": 1,
-                    "description": 1,
-                    "code": 1,
-                    "images": {"$arrayElemAt": ["$images.links", 0]},
-                    "pinterest_links": "$pinterest.links",
-                    "suggestions": "$suggestions.shoes"
-                }
-            }
-        ]
-
-        results = list(shoes_collection.aggregate(pipeline))
-        if not results:
+        shoe_details = shoes_collection.find_one(query)
+        if not shoe_details:
             return jsonify({"error": "Shoe not found with the given criteria."}), 404
 
-        json_result = dumps(results[0])
+        # Fetch related images
+        images = list(images_collection.find({"shoeId": shoe_details['_id']}))
+        image_links = [image['links'][1] for image in images if len(image['links']) > 1]  # Get second image link
+
+        # Fetch colors with image links
+        color_details = []
+        for color_id in shoe_details.get('colors', []):
+            color = shoes_collection.find_one({"_id": color_id})
+            if color:
+                color_image = images_collection.find_one({"shoeId": color['_id']})
+                if color_image and len(color_image['links']) > 1:
+                    color_details.append({
+                        "shoeId": str(color['_id']),
+                        "image": color_image['links'][1],
+                        "code": color.get('code'),
+                        "model": color.get('model')
+                    })
+
+        # Fetch suggestions with image links
+        suggestion_details = []
+        suggestions = suggestions_collection.find_one({"shoeId": shoe_details['_id']})
+        if suggestions:
+            for suggested_id in suggestions.get('shoes', []):
+                suggested_shoe = shoes_collection.find_one({"_id": suggested_id})
+                if suggested_shoe:
+                    suggested_image = images_collection.find_one({"shoeId": suggested_shoe['_id']})
+                    if suggested_image and len(suggested_image['links']) > 1:
+                        suggestion_details.append({
+                            "shoeId": str(suggested_shoe['_id']),
+                            "image": suggested_image['links'][1],
+                            "code": suggested_shoe.get('code'),
+                            "model": suggested_shoe.get('model')
+                        })
+
+        result = {
+            "_id": str(shoe_details['_id']),
+            "code": shoe_details.get('code'),
+            "model": shoe_details.get('model'),
+            "title": shoe_details.get('title'),
+            "description": shoe_details.get('description'),
+            "colors": color_details,
+            "images": image_links,
+            "suggestion": suggestion_details
+        }
+
+        json_result = dumps(result)
         logger.info("Aggregation successful for the requested shoe.")
         return json_result, 200
     except Exception as e:

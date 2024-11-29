@@ -10,7 +10,7 @@
       "bsonType": "array",
       "items": {
         "bsonType": "objectId",
-        "description": "must be an array of objectIds"
+        "description": "must be an array of objectIds and is required"
       },
       "description": "A list of image URLs for the shoe"
     },
