@@ -1,8 +1,12 @@
 {
   "bsonType": "object",
-  "required": ["Shoes"],
+  "required": ["shoeId", "shoes"],
   "properties": {
-    "Shoes": {
+    "shoeId": {
+      "bsonType": "objectId",
+      "description": "The ObjectId of the shoe associated with these images"
+    },
+    "shoes": {
       "bsonType": "array",
       "items": {
         "bsonType": "objectId"

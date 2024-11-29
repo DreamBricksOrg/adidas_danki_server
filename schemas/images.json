@@ -1,8 +1,8 @@
 {
   "bsonType": "object",
-  "required": ["Shoe", "links"],
+  "required": ["shoeId", "links"],
   "properties": {
-    "Shoe": {
+    "shoeId": {
       "bsonType": "objectId",
       "description": "The ObjectId of the shoe associated with these images"
     },

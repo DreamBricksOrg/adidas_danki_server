@@ -54,11 +54,8 @@ def apply_schemas(db):
         # Define schemas and their corresponding collections
         schemas = {
             "shoes": "schemas/shoes.json",
-            "data_sheet": "schemas/dataSheet.json",
             "suggestion": "schemas/suggestion.json",
-            "store": "schemas/store.json",
             "pinterest": "schemas/pinterest.json",
-            "tag": "schemas/tag.json",
             "images": "schemas/images.json"
         }
 
