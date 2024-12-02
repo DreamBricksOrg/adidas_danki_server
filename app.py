@@ -325,6 +325,7 @@ def get_shoe_details():
         shoes_collection = db['shoes']
         images_collection = db['images']
         suggestions_collection = db['suggestion']
+        pinterest_collection = db['pinterest']
 
         shoe_id = request.args.get('id')
         model = request.args.get('model')
@@ -347,6 +348,9 @@ def get_shoe_details():
         # Fetch related images
         images = list(images_collection.find({"shoeId": shoe_details['_id']}))
         image_links = [link for image in images for link in image['links']]  # Get all images link
+
+        pinterest_images = list(pinterest_collection.find({"shoeId": shoe_details['_id']}))
+        pinterest_links = [pinterest_link for pinterest_image in pinterest_images for pinterest_link in pinterest_image['links']]
 
         # Fetch colors with image links
         color_details = []
@@ -386,6 +390,7 @@ def get_shoe_details():
             "description": shoe_details.get('description'),
             "colors": color_details,
             "images": image_links,
+            "pinterest": pinterest_links,
             "suggestion": suggestion_details
         }
 
