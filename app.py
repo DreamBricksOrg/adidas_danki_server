@@ -346,7 +346,7 @@ def get_shoe_details():
 
         # Fetch related images
         images = list(images_collection.find({"shoeId": shoe_details['_id']}))
-        image_links = [image['links'][1] for image in images if len(image['links']) > 1]  # Get second image link
+        image_links = [link for image in images for link in image['links']]  # Get all image link
 
         # Fetch colors with image links
         color_details = []
