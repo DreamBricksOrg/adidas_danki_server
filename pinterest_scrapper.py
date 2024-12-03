@@ -5,7 +5,6 @@ import boto3
 from pymongo import MongoClient
 from bson import ObjectId
 import logging
-import shutil  # Adicione essa importação
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -62,9 +61,11 @@ def scrape_pinterest(board_url, output_folder):
         
         image_paths = []
         for idx, img_tag in enumerate(image_tags):
+            if idx == 0:  # Ignorar a primeira imagem (avatar do perfil)
+                continue
             if "src" in img_tag.attrs:
                 image_url = img_tag["src"]
-                local_image_path = os.path.join(output_folder, f"{idx + 1}.jpg")
+                local_image_path = os.path.join(output_folder, f"{idx}.jpg")
                 with open(local_image_path, "wb") as img_file:
                     img_file.write(requests.get(image_url).content)
                 image_paths.append(local_image_path)
@@ -120,27 +121,7 @@ def save_to_mongo(shoe_id, image_links):
     except Exception as e:
         logger.error(f"Erro ao salvar documento no MongoDB para shoeId {shoe_id}: {e}")
 
-def force_delete_folder(folder_path):
-    """
-    Força a exclusão de uma pasta e todos os seus conteúdos.
-    """
-    try:
-        # Garante que todos os arquivos sejam liberados antes de remover
-        for root, dirs, files in os.walk(folder_path, topdown=False):
-            for file in files:
-                file_path = os.path.join(root, file)
-                os.chmod(file_path, 0o777)  # Altera permissões do arquivo
-                os.remove(file_path)       # Remove o arquivo
-            for dir in dirs:
-                dir_path = os.path.join(root, dir)
-                os.chmod(dir_path, 0o777)  # Altera permissões da subpasta
-                os.rmdir(dir_path)         # Remove a subpasta
-        os.rmdir(folder_path)  # Remove a pasta principal
-    except Exception as e:
-        logger.error(f"Erro ao forçar exclusão da pasta {folder_path}: {e}")
 
-
-# Dentro da função process_pinterest_boards
 def process_pinterest_boards():
     """
     Processa todos os boards do Pinterest, faz o upload das imagens para o S3 e salva no MongoDB.
@@ -169,9 +150,9 @@ def process_pinterest_boards():
             except Exception as e:
                 logger.error(f"Erro ao remover arquivo {image_path}: {e}")
         
-        # Remove a pasta temporária usando a função customizada
+        # Remove a pasta temporária, mas sem afetar pastas no S3
         try:
-            force_delete_folder(local_folder)  # Garante exclusão mesmo com bloqueios
+            os.rmdir(local_folder)
         except Exception as e:
             logger.error(f"Erro ao remover a pasta {local_folder}: {e}")
 
