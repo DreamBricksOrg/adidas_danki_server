@@ -474,4 +474,4 @@ def add_pinterest_data():
 if __name__ == "__main__":
     # Run the Flask application
     logger.info("Starting Flask application...")
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5050)
