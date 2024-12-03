@@ -159,7 +159,7 @@ def create_crud_routes(collection_name):
             for doc in documents:
                 doc['_id'] = str(doc['_id'])  # Convert ObjectId to string for JSON serialization
             logger.info(f"Retrieved all documents from {collection_name}")
-            return jsonify(documents), 200
+            return dumps(documents), 200
         except Exception as e:
             logger.error(f"Failed to retrieve documents from {collection_name}: {e}")
             return jsonify({"error": str(e)}), 500
@@ -174,7 +174,7 @@ def create_crud_routes(collection_name):
                 return jsonify({"error": "Document not found"}), 404
             document['_id'] = str(document['_id'])
             logger.info(f"Retrieved document with ID {id} from {collection_name}")
-            return jsonify(document), 200
+            return dumps(document), 200
         except Exception as e:
             logger.error(f"Failed to retrieve document from {collection_name}: {e}")
             return jsonify({"error": str(e)}), 400
