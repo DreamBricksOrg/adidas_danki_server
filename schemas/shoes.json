@@ -6,14 +6,7 @@
       "bsonType": "string",
       "description": "must be a string and is required"
     },
-    "colors": {
-      "bsonType": "array",
-      "items": {
-        "bsonType": "objectId",
-        "description": "must be an array of objectIds and is required"
-      },
-      "description": "A list of image URLs for the shoe"
-    },
+
     "title": {
       "bsonType": "string",
       "description": "must be a string and is required"
@@ -23,6 +16,10 @@
       "description": "must be a string and is required"
     },
     "code": {
+      "bsonType": "string",
+      "description": "must be a string and is optional"
+    },
+    "tagId":  {
       "bsonType": "string",
       "description": "must be a string and is optional"
     }

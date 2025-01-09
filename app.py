@@ -23,7 +23,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # List of collection names for which CRUD routes will be dynamically created
-collections = ["shoes", "suggestion", "pinterest", "images"]
+collections = ["shoes", "suggestion", "pinterest", "images" ,"tag"]
+
 
 # =======================================
 # Setup and App Configuration
@@ -32,7 +33,7 @@ collections = ["shoes", "suggestion", "pinterest", "images"]
 def create_app():
     """
     Create a Flask application and configure it with a MongoDB connection.
-    
+
     Returns:
         Flask: The configured Flask application with a MongoDB connection.
     """
@@ -58,10 +59,12 @@ def create_app():
     app.db = db
     return app
 
+
 # Initialize the Flask application and MongoDB database from the database module
 app = create_app()
 CORS(app)
 db = app.db
+
 
 # =======================================
 # Auxiliary Methods
@@ -70,7 +73,7 @@ db = app.db
 def convert_object_ids(data):
     """
     Convert JSON fields with $oid to MongoDB ObjectId.
-    
+
     This function processes incoming JSON data and ensures fields formatted as MongoDB ObjectIds
     (e.g., {"$oid": "some_id"}) are properly converted to ObjectId instances.
 
@@ -94,14 +97,15 @@ def convert_object_ids(data):
         return [convert_object_ids(item) for item in data]
     return data
 
+
 def fetch_pinterest_data(board_id, access_token):
     """
     Fetches media data from a Pinterest board using the Pinterest API.
-    
+
     Args:
         board_id (str): The unique identifier of the Pinterest board.
         access_token (str): Access token to authenticate with the Pinterest API.
-    
+
     Returns:
         dict: Media data from the board, including image URLs, or None if the request fails.
     """
@@ -119,6 +123,7 @@ def fetch_pinterest_data(board_id, access_token):
         logger.error(f"Failed to fetch Pinterest data: {e}")
         return None
 
+
 # =======================================
 # Routes
 # =======================================
@@ -126,7 +131,7 @@ def fetch_pinterest_data(board_id, access_token):
 def create_crud_routes(collection_name):
     """
     Dynamically create CRUD routes for a specified MongoDB collection.
-    
+
     This function generates standard CRUD operations (Create, Read, Update, Delete) for a collection.
 
     Args:
@@ -141,7 +146,7 @@ def create_crud_routes(collection_name):
         if not data:
             logger.warning("No data provided in the request.")
             return jsonify({"error": "No data provided"}), 400
-        
+
         try:
             data = convert_object_ids(data)  # Convert $oid fields to ObjectId
             result = collection.insert_one(data)
@@ -159,7 +164,7 @@ def create_crud_routes(collection_name):
             for doc in documents:
                 doc['_id'] = str(doc['_id'])  # Convert ObjectId to string for JSON serialization
             logger.info(f"Retrieved all documents from {collection_name}")
-            return dumps(documents), 200
+            return jsonify(documents), 200
         except Exception as e:
             logger.error(f"Failed to retrieve documents from {collection_name}: {e}")
             return jsonify({"error": str(e)}), 500
@@ -174,7 +179,7 @@ def create_crud_routes(collection_name):
                 return jsonify({"error": "Document not found"}), 404
             document['_id'] = str(document['_id'])
             logger.info(f"Retrieved document with ID {id} from {collection_name}")
-            return dumps(document), 200
+            return jsonify(document), 200
         except Exception as e:
             logger.error(f"Failed to retrieve document from {collection_name}: {e}")
             return jsonify({"error": str(e)}), 400
@@ -186,7 +191,7 @@ def create_crud_routes(collection_name):
         if not data:
             logger.warning("No data provided in the request.")
             return jsonify({"error": "No data provided"}), 400
-        
+
         try:
             result = collection.update_one({"_id": ObjectId(id)}, {"$set": data})
             if result.matched_count == 0:
@@ -211,16 +216,18 @@ def create_crud_routes(collection_name):
         except Exception as e:
             logger.error(f"Failed to delete document from {collection_name}: {e}")
             return jsonify({"error": str(e)}), 500
-        
+
+
 # Dynamically create CRUD routes for all specified collections
 for collection_name in collections:
     create_crud_routes(collection_name)
+
 
 # Atualizações no pipeline de /shoes-with-images
 @app.route('/shoes-with-images', methods=['GET'])
 def get_shoes_with_images():
     """
-    Aggregates data from the 'shoes' and 'images' collections 
+    Aggregates data from the 'shoes' and 'images' collections
     to provide a combined view of shoes with their image links.
 
     Returns:
@@ -315,6 +322,7 @@ def get_shoe_with_pinterest():
         logger.error(f"Failed to retrieve shoe with Pinterest links: {e}")
         return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
 
+
 @app.route('/shoe-details', methods=['GET'])
 def get_shoe_details():
     """
@@ -349,9 +357,9 @@ def get_shoe_details():
         images = list(images_collection.find({"shoeId": shoe_details['_id']}))
         image_links = [link for image in images for link in image['links']]  # Get all images link
 
-        # Fetch related pinterest
-        pinterest = list(pinterest_collection.find({"shoeId": shoe_details['_id']}))
-        pinterest_links = [link for pin in pinterest for link in pin['links']]  # Get all pinterest link
+        pinterest_images = list(pinterest_collection.find({"shoeId": shoe_details['_id']}))
+        pinterest_links = [pinterest_link for pinterest_image in pinterest_images for pinterest_link in
+                           pinterest_image['links']]
 
         # Fetch colors with image links
         color_details = []
@@ -402,11 +410,12 @@ def get_shoe_details():
         logger.error(f"Failed to aggregate shoe details: {e}")
         return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
 
+
 @app.route('/add-pinterest-data', methods=['POST'])
 def add_pinterest_data():
     """
     API endpoint to add or update a Pinterest document for a specific shoe.
-    
+
     The request must provide:
     - "board_id": Pinterest board ID (required)
     - "access_token": Pinterest API access token (required)
@@ -461,11 +470,48 @@ def add_pinterest_data():
             upsert=True  # Insert if no matching document is found
         )
         logger.info(f"Pinterest data added/updated for shoe {shoe['_id']}")
-        return jsonify({"message": "Pinterest data added/updated successfully", "result": str(result.upserted_id or shoe["_id"])}), 200
+        return jsonify({"message": "Pinterest data added/updated successfully",
+                        "result": str(result.upserted_id or shoe["_id"])}), 200
     except Exception as e:
         # Log and return an error response if the operation fails
         logger.error(f"Failed to add/update Pinterest data: {e}")
         return jsonify({"error": "Failed to add/update Pinterest data", "details": str(e)}), 500
+
+
+@app.route('/tag-by-address', methods=['GET'])
+def get_shoe_by_tag():
+    """
+    Retrieves the shoeId associated with a given tagAddress from the 'tag' collection.
+
+    Query Parameters:
+        tagAddress (str): The tag address used to find the associated shoeId.
+
+    Returns:
+        JSON response with the shoeId or an error message if not found.
+    """
+    logger.info("Fetching shoeId by tagAddress from 'tag' collection.")
+
+    tag_address = request.args.get('tagAddress')
+
+    if not tag_address:
+        return jsonify({"error": "tagAddress is required"}), 400
+
+    try:
+        tag = db['tag'].find_one({"tagAddress": tag_address})
+
+        if not tag:
+            logger.warning(f"No tag found with tagAddress: {tag_address}")
+            return jsonify({"error": "Tag not found"}), 404
+
+        shoe_id = str(tag.get("shoeId"))
+        logger.info(f"Shoe found with ID: {shoe_id} for tagAddress: {tag_address}")
+        return jsonify({"shoeId": shoe_id}), 200
+
+    except Exception as e:
+        logger.error(f"Failed to fetch shoe by tagAddress: {e}")
+        return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
+
+
 
 # =======================================
 # Main Function

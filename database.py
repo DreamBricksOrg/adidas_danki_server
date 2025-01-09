@@ -5,16 +5,17 @@ import json
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def load_schema(schema_file):
     """
     Load a JSON schema from a file to enforce structure in MongoDB collections.
-    
+
     Args:
         schema_file (str): Path to the JSON schema file.
-    
+
     Returns:
         dict: The loaded schema as a dictionary.
-    
+
     Raises:
         FileNotFoundError: If the JSON file could not be found.
         json.JSONDecodeError: If there is an error in decoding the JSON.
@@ -29,10 +30,11 @@ def load_schema(schema_file):
         logger.error(f"Error decoding JSON from {schema_file}")
         raise e
 
+
 def ensure_collection_exists(db, collection_name):
     """
     Ensures that a collection exists in the database before applying a schema validator.
-    
+
     Args:
         db: The MongoDB database connection object.
         collection_name (str): The name of the collection to check or create.
