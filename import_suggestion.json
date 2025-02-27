@@ -1,0 +1,386 @@
+[
+  {
+    "shoeId": {
+      "$oid": "67bfa89b275ac7882c8efd5c"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd82"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7c"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7e"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89b275ac7882c8efd5e"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd72"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd66"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd8a"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89b275ac7882c8efd60"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd76"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd70"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd74"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89b275ac7882c8efd62"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd84"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd72"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd64"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89b275ac7882c8efd64"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd74"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd8a"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd62"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89b275ac7882c8efd66"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd82"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd64"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd6c"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd68"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd86"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd66"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd78"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd6a"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd88"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7a"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd78"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd6c"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd82"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd5c"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd84"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd6e"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd78"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd86"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7e"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd70"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd6a"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7e"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd76"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd72"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89b275ac7882c8efd5e"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd70"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd86"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd74"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89b275ac7882c8efd60"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd72"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd70"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd76"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd88"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7a"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd6e"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd78"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd86"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd68"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd6a"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd7a"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd7e"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd8a"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd86"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd7c"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd86"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd6c"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd5e"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd7e"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd80"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd64"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd86"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd80"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd82"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7e"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd5e"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd82"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd76"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd5e"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd8a"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd84"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd70"
+      },
+      {
+        "$oid": "67bfa89b275ac7882c8efd5c"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd82"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd86"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89b275ac7882c8efd66"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd6e"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd72"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd88"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd84"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd6c"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7c"
+      }
+    ]
+  },
+  {
+    "shoeId": {
+      "$oid": "67bfa89c275ac7882c8efd8a"
+    },
+    "shoes": [
+      {
+        "$oid": "67bfa89c275ac7882c8efd6e"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd7c"
+      },
+      {
+        "$oid": "67bfa89c275ac7882c8efd6a"
+      }
+    ]
+  }
+]
