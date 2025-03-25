@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Listar Tenis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/list-sneaker.css') }}">
+    <link href="{{ url_for('static', filename='css/tabulator-bootstrap/styles.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="../../static/css/default.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<h2>Lista de Tênis</h2>
+<div id="sneaker-table"></div>
+
+<script>
+    const table = new Tabulator("#sneaker-table", {
+        ajaxURL: "/shoes-with-images",
+        layout: "fitColumns",
+        height: "600px",
+        locale:true,
+        pagination: "local",
+        paginationSize: 20,
+        paginationSizeSelector: [20, 50, 100],
+        columns: [
+            { title: "Código", field: "code" },
+            { title: "Modelo", field: "model" },
+            {
+                title: "Imagens",
+                field: "images",
+                formatter: function(cell) {
+                    const images = cell.getValue();
+                    return images.map(url => `<img src="${url}" width="50">`).join(" ");
+                }
+            },
+            {
+                title: "Detalhes",
+                formatter: function(cell) {
+                    const data = cell.getRow().getData();
+                    return `<a href="/sneaker/detail?id=${data.id.$oid}" target="_blank"><i>ação</i></a>`;
+                },
+                hozAlign: "center",
+                width: 300
+            }
+        ]
+    });
+</script>
+
+</body>
+</html>

@@ -6,6 +6,8 @@
 from flask import request, jsonify
 from bson import ObjectId
 from bson.json_util import dumps
+
+from admin import admin
 from database import apply_schemas
 from flask import Flask
 from pymongo.mongo_client import MongoClient
@@ -40,6 +42,8 @@ def create_app():
     app = Flask(__name__)
     # MongoDB URI configuration from environment or default setup
     app.config['MONGO_URI'] = "mongodb+srv://guilhermebegotti:n5BHAuwiY1j3FxaF@dbcluster0.qkxkj.mongodb.net/?retryWrites=true&w=majority&appName=DBCluster0"
+
+    app.register_blueprint(admin)
 
     # Initialize MongoDB client
     mongo_client = MongoClient(app.config['MONGO_URI'], server_api=ServerApi('1'))
@@ -520,4 +524,4 @@ def get_shoe_by_tag():
 if __name__ == "__main__":
     # Run the Flask application
     logger.info("Starting Flask application...")
-    app.run(host='0.0.0.0', port=5050)
+    app.run(host='0.0.0.0', port=5000, debug=True)

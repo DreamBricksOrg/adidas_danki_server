@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ sneaker.model }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sneaker-title {
+            font-weight: bold;
+            font-size: 2rem;
+        }
+        .sneaker-description {
+            font-size: 1.1rem;
+            color: #555;
+        }
+        .image-gallery img,
+        .color-variation img,
+        .suggestion img {
+            max-height: 200px;
+            object-fit: cover;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            margin-top: 4px;
+        }
+        label {
+            font-weight: 500;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    <!-- Título e Modelo -->
+    <div class="text-center mb-4">
+        <label for="modelInput">Modelo do Sneaker</label>
+        <input id="modelInput" type="text" class="form-control text-center sneaker-title mb-2" value="{{ sneaker.model }}">
+
+        <label for="titleInput">Título</label>
+        <input id="titleInput" type="text" class="form-control text-center text-muted" value="{{ sneaker.title }}">
+    </div>
+
+    <!-- Descrição -->
+    <div class="mb-5">
+        <label for="descriptionInput">Descrição</label>
+        <textarea id="descriptionInput" class="form-control sneaker-description" rows="4">{{ sneaker.description }}</textarea>
+    </div>
+
+    <!-- Galeria de Imagens -->
+    <div class="mb-5">
+        <h4>Imagens</h4>
+        <div class="row image-gallery">
+            {% for img in sneaker.images %}
+                <div class="col-6 col-md-4 mb-4">
+                    <img src="{{ img }}" class="img-fluid rounded shadow-sm mb-2" alt="Imagem do sneaker">
+                    <label>URL da Imagem</label>
+                    <input type="text" class="form-control" value="{{ img }}">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Variações de Cor -->
+    <div class="mb-5">
+        <h4>Variações de cor</h4>
+        <div class="row color-variation">
+            {% for color in sneaker.colors %}
+                <div class="col-6 col-md-4 text-center mb-4">
+                    <img src="{{ color.image }}" class="img-fluid rounded border mb-2" alt="Cor">
+                    <label>URL da Imagem da Cor</label>
+                    <input type="text" class="form-control mb-2" value="{{ color.image }}">
+
+                    <label>Modelo da Cor</label>
+                    <input type="text" class="form-control mb-1" value="{{ color.model }}">
+
+                    <label>Código da Cor</label>
+                    <input type="text" class="form-control" value="{{ color.code }}">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sugestões -->
+    <div class="mb-5">
+        <h4>Você também pode gostar</h4>
+        <div class="row suggestion">
+            {% for s in sneaker.suggestion %}
+                <div class="col-6 col-md-4 text-center mb-4">
+                    <img src="{{ s.image }}" class="img-fluid rounded border mb-2" alt="Sugestão">
+                    <label>URL da Imagem da Sugestão</label>
+                    <input type="text" class="form-control mb-2" value="{{ s.image }}">
+
+                    <label>Modelo Sugerido</label>
+                    <input type="text" class="form-control mb-1" value="{{ s.model }}">
+
+                    <label>Código do Sugerido</label>
+                    <input type="text" class="form-control" value="{{ s.code }}">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
