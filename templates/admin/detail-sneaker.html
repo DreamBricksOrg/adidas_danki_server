@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>{{ sneaker.model }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         .sneaker-title {
             font-weight: bold;
@@ -28,6 +28,13 @@
         label {
             font-weight: 500;
             margin-top: 10px;
+        }
+        .select2-container--default .select2-selection--single {
+            height: 40px;
+        }
+        .select2-results__option img {
+            height: 30px;
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -55,9 +62,9 @@
         <div class="row image-gallery">
             {% for img in sneaker.images %}
                 <div class="col-6 col-md-4 mb-4">
-                    <img src="{{ img }}" class="img-fluid rounded shadow-sm mb-2" alt="Imagem do sneaker">
+                    <img id="gallery-img-{{ loop.index }}" src="{{ img }}" class="img-fluid rounded shadow-sm mb-2" alt="Imagem do sneaker">
                     <label>URL da Imagem</label>
-                    <input type="text" class="form-control" value="{{ img }}">
+                    <input type="text" class="form-control" value="{{ img }}" data-img-target="gallery-img-{{ loop.index }}">
                 </div>
             {% endfor %}
         </div>
@@ -69,15 +76,20 @@
         <div class="row color-variation">
             {% for color in sneaker.colors %}
                 <div class="col-6 col-md-4 text-center mb-4">
-                    <img src="{{ color.image }}" class="img-fluid rounded border mb-2" alt="Cor">
+                    <img id="color-img-{{ loop.index }}" src="{{ color.image }}" class="img-fluid rounded border mb-2" alt="Cor">
                     <label>URL da Imagem da Cor</label>
-                    <input type="text" class="form-control mb-2" value="{{ color.image }}">
+                    <input type="text" class="form-control mb-2" value="{{ color.image }}" data-img-target="color-img-{{ loop.index }}">
 
                     <label>Modelo da Cor</label>
                     <input type="text" class="form-control mb-1" value="{{ color.model }}">
 
                     <label>Código da Cor</label>
-                    <input type="text" class="form-control" value="{{ color.code }}">
+                    <input type="text" class="form-control mb-2" value="{{ color.code }}">
+
+                    <label>Selecionar Tênis</label>
+                    <select class="form-select sneaker-dropdown" data-img-id="color-img-{{ loop.index }}">
+                        <option value="">-- Selecione um tênis --</option>
+                    </select>
                 </div>
             {% endfor %}
         </div>
@@ -89,20 +101,99 @@
         <div class="row suggestion">
             {% for s in sneaker.suggestion %}
                 <div class="col-6 col-md-4 text-center mb-4">
-                    <img src="{{ s.image }}" class="img-fluid rounded border mb-2" alt="Sugestão">
+                    <img id="suggestion-img-{{ loop.index }}" src="{{ s.image }}" class="img-fluid rounded border mb-2" alt="Sugestão">
                     <label>URL da Imagem da Sugestão</label>
-                    <input type="text" class="form-control mb-2" value="{{ s.image }}">
+                    <input type="text" class="form-control mb-2" value="{{ s.image }}" data-img-target="suggestion-img-{{ loop.index }}">
 
                     <label>Modelo Sugerido</label>
                     <input type="text" class="form-control mb-1" value="{{ s.model }}">
 
                     <label>Código do Sugerido</label>
-                    <input type="text" class="form-control" value="{{ s.code }}">
+                    <input type="text" class="form-control mb-2" value="{{ s.code }}">
+
+                    <label>Selecionar Tênis</label>
+                    <select class="form-select sneaker-dropdown" data-img-id="suggestion-img-{{ loop.index }}">
+                        <option value="">-- Selecione um tênis --</option>
+                    </select>
                 </div>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<!-- JS Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    // Atualiza imagem ao digitar no campo de URL
+    document.querySelectorAll('input[data-img-target]').forEach(input => {
+        input.addEventListener('input', function () {
+            const targetId = this.getAttribute('data-img-target');
+            const img = document.getElementById(targetId);
+            if (img) {
+                img.src = this.value;
+            }
+        });
+    });
+
+    let sneakersData = [];
+
+    // Buscar dados do endpoint
+    fetch('/shoes-with-images')
+        .then(res => res.json())
+        .then(data => {
+            sneakersData = data;
+            populateDropdowns();
+        });
+
+    // Preencher todos os dropdowns com Select2 e imagens
+    function populateDropdowns() {
+        document.querySelectorAll('.sneaker-dropdown').forEach(select => {
+            sneakersData.forEach((s, i) => {
+                if (!s.images || !s.images[1]) return;
+
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = `${s.code} - ${s.model}`;
+                option.setAttribute('data-image', s.images[1]);
+                select.appendChild(option);
+            });
+
+            $(select).select2({
+                templateResult: formatSneaker,
+                templateSelection: formatSneaker,
+                width: '100%'
+            });
+
+            $(select).on('select2:select', function (e) {
+                const index = e.params.data.id;
+                const selected = sneakersData[index];
+                const parent = this.closest('.col-6');
+
+                const imgId = this.getAttribute('data-img-id');
+                const imgEl = document.getElementById(imgId);
+                const imgInput = parent.querySelector('input[data-img-target]');
+                const modelInput = parent.querySelector('input:nth-of-type(2)');
+                const codeInput = parent.querySelector('input:nth-of-type(3)');
+
+                imgEl.src = selected.images[1];
+                imgInput.value = selected.images[1];
+                modelInput.value = selected.model;
+                codeInput.value = selected.code;
+            });
+        });
+    }
+
+    // Função para mostrar imagem + texto no dropdown
+    function formatSneaker(s) {
+        if (!s.id) return s.text;
+        const img = $(s.element).data('image');
+        if (!img) return s.text;
+        return $(`<span><img src="${img}" style="height: 30px; margin-right: 8px;"> ${s.text}</span>`);
+    }
+</script>
 
 </body>
 </html>
