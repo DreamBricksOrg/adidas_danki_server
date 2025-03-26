@@ -590,7 +590,6 @@
 .tabulator-row {
     background-color: #fff;
     box-sizing: border-box;
-    min-height: 24px;
     position: relative
 }
 

@@ -516,6 +516,99 @@ def get_shoe_by_tag():
         return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
 
 
+@app.route('/shoes-and-tags', methods=['GET'])
+def shoes_and_tags():
+    try:
+        shoes_collection = db['shoes']
+        has_tag_param = request.args.get('hasTag')
+
+        match_stage = {}
+        if has_tag_param is not None:
+            if has_tag_param.lower() == 'true':
+                match_stage = {
+                    "$match": {
+                        "$expr": {
+                            "$gt": [{"$size": "$tag"}, 0]
+                        }
+                    }
+                }
+            elif has_tag_param.lower() == 'false':
+                match_stage = {
+                    "$match": {
+                        "$expr": {
+                            "$eq": [{"$size": "$tag"}, 0]
+                        }
+                    }
+                }
+
+        pipeline = [
+            {
+                "$lookup": {
+                    "from": "images",
+                    "localField": "_id",
+                    "foreignField": "shoeId",
+                    "as": "images"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "tag",
+                    "let": {"shoeIdStr": {"$toString": "$_id"}},
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": {
+                                    "$eq": ["$shoeId", "$$shoeIdStr"]
+                                }
+                            }
+                        }
+                    ],
+                    "as": "tag"
+                }
+            },
+            {
+                "$project": {
+                    "id": "$_id",
+                    "model": 1,
+                    "code": 1,
+                    "images": {"$arrayElemAt": ["$images.links", 0]},
+                    "tag": "$tag"
+                }
+            }
+        ]
+
+        if match_stage:
+            pipeline.append(match_stage)
+
+        pipeline.append({
+            "$project": {
+                "id": 1,
+                "model": 1,
+                "code": 1,
+                "images": 1,
+                "tag": {
+                    "$map": {
+                        "input": "$tag",
+                        "as": "t",
+                        "in": {
+                            "tagAddress": "$$t.tagAddress",
+                            "otherField": "$$t.otherField"  # adicione aqui outros campos que desejar
+                        }
+                    }
+                }
+            }
+        })
+
+        results = list(shoes_collection.aggregate(pipeline))
+        json_results = dumps(results)
+
+        logger.info(f"Aggregation successful. Retrieved {len(results)} shoes.")
+        return json_results, 200
+    except Exception as e:
+        logger.error(f"Failed to aggregate shoes with images: {e}")
+        return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
+
+
 
 # =======================================
 # Main Function
