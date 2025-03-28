@@ -5,7 +5,89 @@
     <title>{{ sneaker.model }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <script type="module">
+        import QrScanner from "https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js";
+        QrScanner.WORKER_PATH = 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner-worker.min.js';
+
+        const shoeId = "{{ sneaker._id }}";
+        let qrScanner;
+
+        const videoElem = document.createElement('video');
+        videoElem.style.width = '100%';
+        videoElem.style.height = '100%';
+        document.getElementById('qr-reader').appendChild(videoElem);
+
+        const scannedTagInput = document.getElementById("scanned-tag");
+        const tagList = document.getElementById("tag-list");
+        const addTagBtn = document.getElementById("add-tag");
+        const qrModal = document.getElementById("qrModal");
+
+        function formatMac(raw) {
+            return raw.toUpperCase().match(/.{1,2}/g).join(":");
+        }
+
+        function loadTags() {
+            fetch(`/sneaker/${shoeId}/tags`)
+                .then(res => res.json())
+                .then(tags => {
+                tagList.innerHTML = "";
+                tags.forEach(tag => {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item d-flex justify-content-between align-items-center";
+                    li.innerHTML = `
+                        ${tag.tagAddress}
+                        <button class="btn btn-sm btn-danger" onclick="deleteTag('${tag._id}')">Excluir</button>
+                    `;
+                    tagList.appendChild(li);
+                });
+            });
+        }
+
+        window.deleteTag = function (tagId) {
+            fetch(`/tag/${tagId}`, { method: "DELETE" })
+                .then(() => loadTags());
+        }
+
+        addTagBtn.addEventListener("click", () => {
+            const tagAddress = scannedTagInput.value.trim();
+            if (!tagAddress) return;
+
+            fetch(`/sneaker/${shoeId}/tags`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tagAddress })
+            })
+                .then(() => {
+                scannedTagInput.value = "";
+                loadTags();
+            });
+        });
+
+        qrModal.addEventListener('shown.bs.modal', () => {
+            qrScanner = new QrScanner(videoElem, result => {
+                const mac = formatMac(result);
+                scannedTagInput.value = mac;
+
+                qrScanner.stop();
+                const modalInstance = bootstrap.Modal.getInstance(qrModal);
+                modalInstance.hide();
+            });
+
+            qrScanner.start().catch(e => {
+                console.error("Erro ao iniciar scanner:", e);
+            });
+        });
+
+        qrModal.addEventListener('hidden.bs.modal', () => {
+            if (qrScanner) qrScanner.stop();
+        });
+
+        // Carregar tags ao abrir a página
+        loadTags();
+    </script>
+
+
     <style>
         .sneaker-title {
             font-weight: bold;
@@ -44,7 +126,8 @@
     <!-- Título e Modelo -->
     <div class="text-center mb-4">
         <label for="modelInput">Modelo do Sneaker</label>
-        <input id="modelInput" type="text" class="form-control text-center sneaker-title mb-2" value="{{ sneaker.model }}">
+        <input id="modelInput" type="text" class="form-control text-center sneaker-title mb-2"
+               value="{{ sneaker.model }}">
 
         <label for="titleInput">Título</label>
         <input id="titleInput" type="text" class="form-control text-center text-muted" value="{{ sneaker.title }}">
@@ -53,7 +136,8 @@
     <!-- Descrição -->
     <div class="mb-5">
         <label for="descriptionInput">Descrição</label>
-        <textarea id="descriptionInput" class="form-control sneaker-description" rows="4">{{ sneaker.description }}</textarea>
+        <textarea id="descriptionInput" class="form-control sneaker-description"
+                  rows="4">{{ sneaker.description }}</textarea>
     </div>
 
     <!-- Galeria de Imagens -->
@@ -61,11 +145,13 @@
         <h4>Imagens</h4>
         <div class="row image-gallery">
             {% for img in sneaker.images %}
-                <div class="col-6 col-md-4 mb-4">
-                    <img id="gallery-img-{{ loop.index }}" src="{{ img }}" class="img-fluid rounded shadow-sm mb-2" alt="Imagem do sneaker">
-                    <label>URL da Imagem</label>
-                    <input type="text" class="form-control" value="{{ img }}" data-img-target="gallery-img-{{ loop.index }}">
-                </div>
+            <div class="col-6 col-md-4 mb-4">
+                <img id="gallery-img-{{ loop.index }}" src="{{ img }}" class="img-fluid rounded shadow-sm mb-2"
+                     alt="Imagem do sneaker">
+                <label>URL da Imagem</label>
+                <input type="text" class="form-control" value="{{ img }}"
+                       data-img-target="gallery-img-{{ loop.index }}">
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -75,22 +161,24 @@
         <h4>Variações de cor</h4>
         <div class="row color-variation">
             {% for color in sneaker.colors %}
-                <div class="col-6 col-md-4 text-center mb-4">
-                    <img id="color-img-{{ loop.index }}" src="{{ color.image }}" class="img-fluid rounded border mb-2" alt="Cor">
-                    <label>URL da Imagem da Cor</label>
-                    <input type="text" class="form-control mb-2" value="{{ color.image }}" data-img-target="color-img-{{ loop.index }}">
+            <div class="col-6 col-md-4 text-center mb-4">
+                <img id="color-img-{{ loop.index }}" src="{{ color.image }}" class="img-fluid rounded border mb-2"
+                     alt="Cor">
+                <label>URL da Imagem da Cor</label>
+                <input type="text" class="form-control mb-2" value="{{ color.image }}"
+                       data-img-target="color-img-{{ loop.index }}">
 
-                    <label>Modelo da Cor</label>
-                    <input type="text" class="form-control mb-1" value="{{ color.model }}">
+                <label>Modelo da Cor</label>
+                <input type="text" class="form-control mb-1" value="{{ color.model }}">
 
-                    <label>Código da Cor</label>
-                    <input type="text" class="form-control mb-2" value="{{ color.code }}">
+                <label>Código da Cor</label>
+                <input type="text" class="form-control mb-2" value="{{ color.code }}">
 
-                    <label>Selecionar Tênis</label>
-                    <select class="form-select sneaker-dropdown" data-img-id="color-img-{{ loop.index }}">
-                        <option value="">-- Selecione um tênis --</option>
-                    </select>
-                </div>
+                <label>Selecionar Tênis</label>
+                <select class="form-select sneaker-dropdown" data-img-id="color-img-{{ loop.index }}">
+                    <option value="">-- Selecione um tênis --</option>
+                </select>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -100,31 +188,65 @@
         <h4>Você também pode gostar</h4>
         <div class="row suggestion">
             {% for s in sneaker.suggestion %}
-                <div class="col-6 col-md-4 text-center mb-4">
-                    <img id="suggestion-img-{{ loop.index }}" src="{{ s.image }}" class="img-fluid rounded border mb-2" alt="Sugestão">
-                    <label>URL da Imagem da Sugestão</label>
-                    <input type="text" class="form-control mb-2" value="{{ s.image }}" data-img-target="suggestion-img-{{ loop.index }}">
+            <div class="col-6 col-md-4 text-center mb-4">
+                <img id="suggestion-img-{{ loop.index }}" src="{{ s.image }}" class="img-fluid rounded border mb-2"
+                     alt="Sugestão">
+                <label>URL da Imagem da Sugestão</label>
+                <input type="text" class="form-control mb-2" value="{{ s.image }}"
+                       data-img-target="suggestion-img-{{ loop.index }}">
 
-                    <label>Modelo Sugerido</label>
-                    <input type="text" class="form-control mb-1" value="{{ s.model }}">
+                <label>Modelo Sugerido</label>
+                <input type="text" class="form-control mb-1" value="{{ s.model }}">
 
-                    <label>Código do Sugerido</label>
-                    <input type="text" class="form-control mb-2" value="{{ s.code }}">
+                <label>Código do Sugerido</label>
+                <input type="text" class="form-control mb-2" value="{{ s.code }}">
 
-                    <label>Selecionar Tênis</label>
-                    <select class="form-select sneaker-dropdown" data-img-id="suggestion-img-{{ loop.index }}">
-                        <option value="">-- Selecione um tênis --</option>
-                    </select>
-                </div>
+                <label>Selecionar Tênis</label>
+                <select class="form-select sneaker-dropdown" data-img-id="suggestion-img-{{ loop.index }}">
+                    <option value="">-- Selecione um tênis --</option>
+                </select>
+            </div>
             {% endfor %}
         </div>
     </div>
+
+    <!-- Gerenciar Tags -->
+    <div class="mb-5">
+        <h4>Tags associadas</h4>
+        <ul id="tag-list" class="list-group mb-3"></ul>
+
+        <div class="mb-3">
+            <label for="scanned-tag">Endereço de Tag (lido por QR)</label>
+            <input type="text" id="scanned-tag" class="form-control mb-2" placeholder="xx:xx:xx:xx:xx:xx">
+            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#qrModal">Escanear QR Code</button>
+            <button id="add-tag" class="btn btn-primary">Adicionar</button>
+        </div>
+    </div>
+
+    <!-- Modal de QR Code -->
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrModalLabel">Escanear QR Code da Tag</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="qr-reader" style="width: 100%; height: 400px; background: #000;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>
 
 <!-- JS Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
 
 <script>
     // Atualiza imagem ao digitar no campo de URL
@@ -144,9 +266,9 @@
     fetch('/shoes-with-images')
         .then(res => res.json())
         .then(data => {
-            sneakersData = data;
-            populateDropdowns();
-        });
+        sneakersData = data;
+        populateDropdowns();
+    });
 
     // Preencher todos os dropdowns com Select2 e imagens
     function populateDropdowns() {

@@ -609,6 +609,40 @@ def shoes_and_tags():
         return jsonify({"error": "Failed to retrieve data", "details": str(e)}), 500
 
 
+@app.route("/sneaker/<shoe_id>/tags", methods=["GET"])
+def get_tags(shoe_id):
+    tags = list(db["tag"].find({"shoeId": shoe_id}))
+    for t in tags:
+        t["_id"] = str(t["_id"])
+    return jsonify(tags)
+
+
+@app.route("/sneaker/<shoe_id>/tags", methods=["POST"])
+def add_tag(shoe_id):
+    data = request.get_json()
+    tag_address = data.get("tagAddress")
+
+    if not tag_address:
+        return jsonify({"error": "tagAddress é obrigatório"}), 400
+
+    tag_doc = {
+        "shoeId": shoe_id,
+        "tagAddress": tag_address
+    }
+
+    result = db["tag"].insert_one(tag_doc)
+    tag_doc["_id"] = str(result.inserted_id)
+    return jsonify(tag_doc), 201
+
+
+@app.route("/tag/<tag_id>", methods=["DELETE"])
+def delete_tag_by_id(tag_id):
+    result = db["tag"].delete_one({"_id": ObjectId(tag_id)})
+    if result.deleted_count == 0:
+        return jsonify({"error": "Tag não encontrada"}), 404
+    return jsonify({"success": True})
+
+
 
 # =======================================
 # Main Function

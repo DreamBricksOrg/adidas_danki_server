@@ -16,7 +16,7 @@
 
 <script>
     const table = new Tabulator("#sneaker-table", {
-        ajaxURL: "/shoes-with-images",
+        ajaxURL: "/shoes-and-tags",
         layout: "fitColumns",
         height: "800px",
         locale:true,
@@ -33,6 +33,16 @@
                     const images = cell.getValue();
                     return images.map(url => `<img src="${url}" width="50">`).join(" ");
                 }
+            },
+            {
+                title: "Tags",
+                field: "tag",
+                formatter: function(cell) {
+                    const tags = cell.getValue();
+                    if (!tags || !tags.length) return "—";
+                    return tags.map(t => `<span>${t.tagAddress}</span>`).join("<br>");
+                },
+                width: 200
             },
             {
                 title: "Detalhes",
