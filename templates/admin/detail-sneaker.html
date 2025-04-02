@@ -151,6 +151,8 @@
                 <label>URL da Imagem</label>
                 <input type="text" class="form-control" value="{{ img }}"
                        data-img-target="gallery-img-{{ loop.index }}">
+                <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
+
             </div>
             {% endfor %}
         </div>
@@ -167,7 +169,6 @@
             <div class="col-6 col-md-4 text-center mb-4">
                 <img id="color-img-{{ loop.index }}" src="{{ color.image }}" class="img-fluid rounded border mb-2"
                      alt="Cor">
-                <label>URL da Imagem da Cor</label>
                 <input type="text" class="form-control mb-2" value="{{ color.image }}"
                        data-img-target="color-img-{{ loop.index }}">
 
@@ -181,6 +182,7 @@
                 <select class="form-select sneaker-dropdown" data-img-id="color-img-{{ loop.index }}">
                     <option value="">-- Selecione um tênis --</option>
                 </select>
+                <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
             </div>
             {% endfor %}
         </div>
@@ -197,7 +199,6 @@
             <div class="col-6 col-md-4 text-center mb-4">
                 <img id="suggestion-img-{{ loop.index }}" src="{{ s.image }}" class="img-fluid rounded border mb-2"
                      alt="Sugestão">
-                <label>URL da Imagem da Sugestão</label>
                 <input type="text" class="form-control mb-2" value="{{ s.image }}"
                        data-img-target="suggestion-img-{{ loop.index }}">
 
@@ -211,6 +212,7 @@
                 <select class="form-select sneaker-dropdown" data-img-id="suggestion-img-{{ loop.index }}">
                     <option value="">-- Selecione um tênis --</option>
                 </select>
+                <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
             </div>
             {% endfor %}
         </div>
@@ -264,8 +266,8 @@
         col.className = "col-6 col-md-4 mb-4";
         col.innerHTML = `
             <img id="gallery-img-${count}" src="" class="img-fluid rounded shadow-sm mb-2" alt="Imagem do sneaker">
-            <label>URL da Imagem</label>
             <input type="text" class="form-control" data-img-target="gallery-img-${count}">
+            <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
         `;
         container.appendChild(col);
 
@@ -275,7 +277,7 @@
         });
 
         if (container.children.length >= 3) {
-            this.remove();
+            this.style.display='none';
         }
     });
 </script>
@@ -289,7 +291,6 @@
         col.className = "col-6 col-md-4 text-center mb-4";
         col.innerHTML = `
             <img id="color-img-${count}" src="" class="img-fluid rounded border mb-2" alt="Cor">
-            <label>URL da Imagem da Cor</label>
             <input type="text" class="form-control mb-2" data-img-target="color-img-${count}">
 
             <label>Modelo da Cor</label>
@@ -302,6 +303,7 @@
             <select class="form-select sneaker-dropdown" data-img-id="color-img-${count}">
                 <option value="">-- Selecione um tênis --</option>
             </select>
+            <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
         `;
         container.appendChild(col);
 
@@ -315,7 +317,7 @@
         populateDropdowns();
 
         if (container.children.length >= 3) {
-            this.remove();
+            this.style.display='none';
         }
     });
 </script>
@@ -329,7 +331,6 @@
         col.className = "col-6 col-md-4 text-center mb-4";
         col.innerHTML = `
             <img id="suggestion-img-${count}" src="" class="img-fluid rounded border mb-2" alt="Sugestão">
-            <label>URL da Imagem da Sugestão</label>
             <input type="text" class="form-control mb-2" data-img-target="suggestion-img-${count}">
 
             <label>Modelo Sugerido</label>
@@ -342,6 +343,7 @@
             <select class="form-select sneaker-dropdown" data-img-id="suggestion-img-${count}">
                 <option value="">-- Selecione um tênis --</option>
             </select>
+            <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
         `;
         container.appendChild(col);
 
@@ -353,7 +355,7 @@
         populateDropdowns();
 
         if (container.children.length >= 3) {
-            this.remove();
+            this.style.display='none';
         }
     });
 </script>
@@ -426,6 +428,27 @@
         if (!img) return s.text;
         return $(`<span><img src="${img}" style="height: 30px; margin-right: 8px;"> ${s.text}</span>`);
     }
+
+
+    function enableItemRemoval(sectionId, addButtonId) {
+        const container = document.getElementById(sectionId);
+        container.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-item')) {
+                e.target.closest('.col-6').remove();
+
+                // Mostrar botão se tiver menos de 3 itens
+                if (container.children.length < 3) {
+                    document.getElementById(addButtonId).style.display = 'inline-block';
+                }
+            }
+        });
+    }
+
+    // Ativar exclusão para todas as seções
+    enableItemRemoval("image-gallery", "add-image");
+    enableItemRemoval("color-variation", "add-color");
+    enableItemRemoval("suggestion-section", "add-suggestion");
+
 </script>
 
 </body>
