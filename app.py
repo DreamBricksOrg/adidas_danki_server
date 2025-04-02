@@ -3,8 +3,8 @@
 # =======================================
 
 # Import necessary modules for creating a Flask application with MongoDB
-from flask import request, jsonify
-from bson import ObjectId
+from flask import request, jsonify, Response
+from bson import ObjectId, json_util
 from bson.json_util import dumps
 
 from admin import admin
@@ -42,6 +42,7 @@ def create_app():
     app = Flask(__name__)
     # MongoDB URI configuration from environment or default setup
     app.config['MONGO_URI'] = "mongodb+srv://guilhermebegotti:n5BHAuwiY1j3FxaF@dbcluster0.qkxkj.mongodb.net/?retryWrites=true&w=majority&appName=DBCluster0"
+    # app.config['MONGO_URI'] = "mongodb://A7b9C3dE1F:G4h8J2kL6M@localhost:27017/?authSource=admin&retryWrites=true"
 
     app.register_blueprint(admin)
 
@@ -643,6 +644,28 @@ def delete_tag_by_id(tag_id):
     return jsonify({"success": True})
 
 
+@app.route('/suggestion-by-shoe-id/<shoe_id>', methods=['GET'])
+def get_suggestion_by_shoeid(shoe_id):
+    try:
+        suggestion = db.suggestion.find_one({"shoeId": ObjectId(shoe_id)})
+        if suggestion:
+            return Response(json_util.dumps(suggestion), mimetype='application/json')
+        else:
+            return Response(json_util.dumps({"error": "Suggestion not found"}), status=404, mimetype='application/json')
+    except Exception as e:
+        return Response(json_util.dumps({"error": str(e)}), status=400, mimetype='application/json')
+
+
+@app.route('/images-by-shoe-id/<shoe_id>', methods=['GET'])
+def get_images_by_shoeid(shoe_id):
+    try:
+        images = list(db.images.find({"shoeId": ObjectId(shoe_id)}))
+        return Response(json_util.dumps(images), mimetype='application/json')
+    except Exception as e:
+        return Response(json_util.dumps({"error": str(e)}), status=400, mimetype='application/json')
+
+
+
 
 # =======================================
 # Main Function
@@ -651,4 +674,4 @@ def delete_tag_by_id(tag_id):
 if __name__ == "__main__":
     # Run the Flask application
     logger.info("Starting Flask application...")
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
