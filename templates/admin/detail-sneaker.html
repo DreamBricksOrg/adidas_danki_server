@@ -178,6 +178,8 @@
                 <label>Código da Cor</label>
                 <input type="text" class="form-control mb-2" value="{{ color.code }}">
 
+                 <input type="hidden" class="shoe-id-hidden" value="{{ color.shoeId }}">
+
                 <label>Selecionar Tênis</label>
                 <select class="form-select sneaker-dropdown" data-img-id="color-img-{{ loop.index }}">
                     <option value="">-- Selecione um tênis --</option>
@@ -208,6 +210,8 @@
                 <label>Código do Sugerido</label>
                 <input type="text" class="form-control mb-2" value="{{ s.code }}">
 
+                <input type="hidden" class="shoe-id-hidden" value="{{ s.shoeId }}">
+
                 <label>Selecionar Tênis</label>
                 <select class="form-select sneaker-dropdown" data-img-id="suggestion-img-{{ loop.index }}">
                     <option value="">-- Selecione um tênis --</option>
@@ -220,6 +224,11 @@
         <button id="add-suggestion" class="btn btn-outline-primary">Adicionar sugestão</button>
         {% endif %}
     </div>
+
+    <div class="text-center mb-5">
+        <button onclick="printSneakerObject()" class="btn btn-success">Imprimir Objeto Atual</button>
+    </div>
+
 
     <!-- Gerenciar Tags -->
     <div class="mb-5">
@@ -299,6 +308,8 @@
             <label>Código da Cor</label>
             <input type="text" class="form-control mb-2" value="">
 
+            <input type="hidden" class="shoe-id-hidden" value="">
+
             <label>Selecionar Tênis</label>
             <select class="form-select sneaker-dropdown" data-img-id="color-img-${count}">
                 <option value="">-- Selecione um tênis --</option>
@@ -338,6 +349,8 @@
 
             <label>Código do Sugerido</label>
             <input type="text" class="form-control mb-2" value="">
+
+            <input type="hidden" class="shoe-id-hidden" value="">
 
             <label>Selecionar Tênis</label>
             <select class="form-select sneaker-dropdown" data-img-id="suggestion-img-${count}">
@@ -386,15 +399,18 @@
     // Preencher todos os dropdowns com Select2 e imagens
     function populateDropdowns() {
         document.querySelectorAll('.sneaker-dropdown').forEach(select => {
-            sneakersData.forEach((s, i) => {
-                if (!s.images || !s.images[1]) return;
+            // Evitar duplicar opções
+            if (select.options.length <= 1) {
+                sneakersData.forEach((s, i) => {
+                    if (!s.images || !s.images[1]) return;
 
-                const option = document.createElement('option');
-                option.value = i;
-                option.text = `${s.code} - ${s.model}`;
-                option.setAttribute('data-image', s.images[1]);
-                select.appendChild(option);
-            });
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.text = `${s.code} - ${s.model}`;
+                    option.setAttribute('data-image', s.images[1]);
+                    select.appendChild(option);
+                });
+            }
 
             $(select).select2({
                 templateResult: formatSneaker,
@@ -412,11 +428,13 @@
                 const imgInput = parent.querySelector('input[data-img-target]');
                 const modelInput = parent.querySelector('input:nth-of-type(2)');
                 const codeInput = parent.querySelector('input:nth-of-type(3)');
+                const shoeIdInput = parent.querySelector('.shoe-id-hidden');
 
-                imgEl.src = selected.images[1];
-                imgInput.value = selected.images[1];
-                modelInput.value = selected.model;
-                codeInput.value = selected.code;
+                if (imgEl) imgEl.src = selected.images[1];
+                if (imgInput) imgInput.value = selected.images[1];
+                if (modelInput) modelInput.value = selected.model;
+                if (codeInput) codeInput.value = selected.code;
+                if (shoeIdInput) shoeIdInput.value = selected._id.$oid;
             });
         });
     }
@@ -448,6 +466,55 @@
     enableItemRemoval("image-gallery", "add-image");
     enableItemRemoval("color-variation", "add-color");
     enableItemRemoval("suggestion-section", "add-suggestion");
+
+</script>
+
+<script>
+    function printSneakerObject() {
+        const sneaker = {
+            _id: "{{ sneaker._id }}",
+            code: "{{ sneaker.code }}",
+            model: document.getElementById("modelInput").value.trim(),
+            title: document.getElementById("titleInput").value.trim(),
+            description: document.getElementById("descriptionInput").value.trim(),
+            images: [],
+            colors: [],
+            suggestion: []
+        };
+
+        // Imagens principais
+        document.querySelectorAll('#image-gallery input[data-img-target]').forEach(input => {
+            const url = input.value.trim();
+            if (url) sneaker.images.push(url);
+        });
+
+        // Variações de cor
+        document.querySelectorAll('#color-variation .col-6').forEach(col => {
+            const image = col.querySelector('input[data-img-target]').value.trim();
+            const model = col.querySelector('input:nth-of-type(2)').value.trim();
+            const code = col.querySelector('input:nth-of-type(3)').value.trim();
+            const shoeId = col.querySelector('.shoe-id-hidden')?.value.trim();
+
+            if (image && model && code) {
+                sneaker.colors.push({ image, model, code, shoeId });
+            }
+        });
+
+        // Sugestões
+        document.querySelectorAll('#suggestion-section .col-6').forEach(col => {
+            const image = col.querySelector('input[data-img-target]').value.trim();
+            const model = col.querySelector('input:nth-of-type(2)').value.trim();
+            const code = col.querySelector('input:nth-of-type(3)').value.trim();
+            const shoeId = col.querySelector('.shoe-id-hidden')?.value.trim();
+
+            if (image && model && code) {
+                sneaker.suggestion.push({ image, model, code, shoeId });
+            }
+        });
+
+        console.log("Sneaker atualizado:", sneaker);
+        alert("Objeto sneaker atualizado foi impresso no console.");
+    }
 
 </script>
 
