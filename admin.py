@@ -3,6 +3,10 @@ import json
 
 admin = Blueprint('admin', __name__)
 
+@admin.route('/')
+def menu_page():
+    return render_template('admin/menu.html')
+
 @admin.route('/sneaker/list')
 def sneaker_list_page():
     return render_template('admin/list-sneaker.html')
@@ -19,6 +23,6 @@ def sneaker_detail_page():
 def sneaker_create_page():
     return render_template('admin/create-sneaker.html')
 
-@admin.route('/sneaker/assign-tag')
-def sneaker_assign_tag():
-    return "Assigned", 200
+@admin.route('/sneaker/scan-tag')
+def scan_tag_page():
+    return render_template('admin/scan-tag.html')
