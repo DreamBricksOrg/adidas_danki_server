@@ -152,7 +152,7 @@
             <div class="col-6 col-md-4 mb-4">
                 <img id="gallery-img-{{ loop.index }}" src="{{ img }}" class="img-fluid rounded shadow-sm mb-2"
                      alt="Imagem do sneaker">
-                <input type="text" class="form-control" value="{{ img }}"
+                <input type="text" class="form-control d-none" value="{{ img }}"
                        data-img-target="gallery-img-{{ loop.index }}">
                 <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
 
@@ -172,14 +172,14 @@
             <div class="col-6 col-md-4 text-center mb-4">
                 <img id="color-img-{{ loop.index }}" src="{{ color.image }}" class="img-fluid rounded border mb-2"
                      alt="Cor">
-                <input type="text" class="form-control mb-2" value="{{ color.image }}"
-                       data-img-target="color-img-{{ loop.index }}">
+                <input type="text" class="form-control mb-2 d-none" value="{{ color.image }}"
+                       data-img-target="color-img-{{ loop.index }}" disabled>
 
                 <label>Modelo da Cor</label>
-                <input type="text" class="form-control mb-1" value="{{ color.model }}">
+                <input type="text" class="form-control mb-1" value="{{ color.model }}" disabled>
 
                 <label>Código da Cor</label>
-                <input type="text" class="form-control mb-2" value="{{ color.code }}">
+                <input type="text" class="form-control mb-2" value="{{ color.code }}" disabled>
 
                 <input type="hidden" class="shoe-id-hidden" value="{{ color.shoeId }}">
 
@@ -204,14 +204,14 @@
             <div class="col-6 col-md-4 text-center mb-4">
                 <img id="suggestion-img-{{ loop.index }}" src="{{ s.image }}" class="img-fluid rounded border mb-2"
                      alt="Sugestão">
-                <input type="text" class="form-control mb-2" value="{{ s.image }}"
-                       data-img-target="suggestion-img-{{ loop.index }}">
+                <input type="text" class="form-control mb-2 d-none" value="{{ s.image }}"
+                       data-img-target="suggestion-img-{{ loop.index }}" disabled>
 
                 <label>Modelo Sugerido</label>
-                <input type="text" class="form-control mb-1" value="{{ s.model }}">
+                <input type="text" class="form-control mb-1" value="{{ s.model }}" disabled>
 
                 <label>Código do Sugerido</label>
-                <input type="text" class="form-control mb-2" value="{{ s.code }}">
+                <input type="text" class="form-control mb-2" value="{{ s.code }}" disabled>
 
                 <input type="hidden" class="shoe-id-hidden" value="{{ s.shoeId }}">
 
@@ -285,7 +285,7 @@
         col.className = "col-6 col-md-4 mb-4";
         col.innerHTML = `
             <img id="gallery-img-${count}" src="" class="img-fluid rounded shadow-sm mb-2" alt="Imagem do sneaker">
-            <input type="text" class="form-control" data-img-target="gallery-img-${count}">
+            <input type="text" class="form-control d-none" data-img-target="gallery-img-${count}">
             <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
         `;
         container.appendChild(col);
@@ -312,13 +312,13 @@
         col.className = "col-6 col-md-4 text-center mb-4";
         col.innerHTML = `
             <img id="color-img-${count}" src="" class="img-fluid rounded border mb-2" alt="Cor">
-            <input type="text" class="form-control mb-2" data-img-target="color-img-${count}">
+            <input type="text" class="form-control mb-2 d-none" data-img-target="color-img-${count}" disabled>
 
             <label>Modelo da Cor</label>
-            <input type="text" class="form-control mb-1" value="">
+            <input type="text" class="form-control mb-1" value="" disabled>
 
             <label>Código da Cor</label>
-            <input type="text" class="form-control mb-2" value="">
+            <input type="text" class="form-control mb-2" value="" disabled>
 
             <input type="hidden" class="shoe-id-hidden" value="">
 
@@ -354,13 +354,13 @@
         col.className = "col-6 col-md-4 text-center mb-4";
         col.innerHTML = `
             <img id="suggestion-img-${count}" src="" class="img-fluid rounded border mb-2" alt="Sugestão">
-            <input type="text" class="form-control mb-2" data-img-target="suggestion-img-${count}">
+            <input type="text" class="form-control mb-2 d-none" data-img-target="suggestion-img-${count}" disabled>
 
             <label>Modelo Sugerido</label>
-            <input type="text" class="form-control mb-1" value="">
+            <input type="text" class="form-control mb-1" value="" disabled>
 
             <label>Código do Sugerido</label>
-            <input type="text" class="form-control mb-2" value="">
+            <input type="text" class="form-control mb-2" value="" disabled>
 
             <input type="hidden" class="shoe-id-hidden" value="">
 
