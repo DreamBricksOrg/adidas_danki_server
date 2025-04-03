@@ -28,6 +28,15 @@ def upload_file_to_s3(file_path, bucket_name, s3_key):
         print(f"Erro ao enviar arquivo: {e}")
         return False
 
+def upload_file_blob_to_s3(file, bucket_name, s3_key):
+    """Faz upload de um arquivo para o S3 diretamente do Flask."""
+    try:
+        s3.upload_fileobj(file, bucket_name, s3_key)
+        return f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
+    except ClientError as e:
+        print(f"Erro ao enviar arquivo: {e}")
+        return None
+
 def download_file_from_s3(bucket_name, s3_key, local_path):
     """Faz download de um arquivo do S3 para o disco local."""
     try:

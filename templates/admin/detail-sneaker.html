@@ -159,9 +159,9 @@
             </div>
             {% endfor %}
         </div>
-        {% if sneaker.images|length < 3 %}
+
         <button id="add-image" class="btn btn-outline-primary">Adicionar Imagem</button>
-        {% endif %}
+
     </div>
 
     <!-- Variações de Cor -->
@@ -191,9 +191,9 @@
             </div>
             {% endfor %}
         </div>
-        {% if sneaker.colors|length < 3 %}
+
         <button id="add-color" class="btn btn-outline-primary">Adicionar variação de cor</button>
-        {% endif %}
+
     </div>
 
     <!-- Sugestões -->
@@ -223,9 +223,9 @@
             </div>
             {% endfor %}
         </div>
-        {% if sneaker.suggestion|length < 3 %}
+
         <button id="add-suggestion" class="btn btn-outline-primary">Adicionar sugestão</button>
-        {% endif %}
+
     </div>
 
     <div class="text-center mb-5">
@@ -273,6 +273,12 @@
 <script>
     document.getElementById("add-image")?.addEventListener("click", function () {
         const container = document.getElementById("image-gallery");
+
+        if (container.children.length >= 3) {
+            alert("Máximo de 3 imagens permitidas.");
+            return;
+        }
+
         const count = container.children.length + 1;
 
         const col = document.createElement("div");
@@ -288,16 +294,18 @@
             const img = document.getElementById(this.getAttribute("data-img-target"));
             if (img) img.src = this.value;
         });
-
-        if (container.children.length >= 3) {
-            this.style.display='none';
-        }
     });
 </script>
 
 <script>
     document.getElementById("add-color")?.addEventListener("click", function () {
         const container = document.getElementById("color-variation");
+
+        if (container.children.length >= 3) {
+            alert("Máximo de 3 variações de cor permitidas.");
+            return;
+        }
+
         const count = container.children.length + 1;
 
         const col = document.createElement("div");
@@ -322,24 +330,24 @@
         `;
         container.appendChild(col);
 
-        // Permitir atualização da imagem ao digitar
         col.querySelector('input[data-img-target]').addEventListener('input', function () {
             const img = document.getElementById(this.getAttribute('data-img-target'));
             if (img) img.src = this.value;
         });
 
-        // Recarregar dropdown
         populateDropdowns();
-
-        if (container.children.length >= 3) {
-            this.style.display='none';
-        }
     });
 </script>
 
 <script>
     document.getElementById("add-suggestion")?.addEventListener("click", function () {
-        const container = document.getElementById("suggestion-section");
+    const container = document.getElementById("suggestion-section");
+
+    if (container.children.length >= 3) {
+        alert("Máximo de 3 sugestões permitidas.");
+        return;
+    }
+
         const count = container.children.length + 1;
 
         const col = document.createElement("div");
@@ -370,10 +378,6 @@
         });
 
         populateDropdowns();
-
-        if (container.children.length >= 3) {
-            this.style.display='none';
-        }
     });
 </script>
 
