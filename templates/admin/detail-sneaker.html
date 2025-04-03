@@ -286,15 +286,26 @@
         col.innerHTML = `
             <img id="gallery-img-${count}" src="" class="img-fluid rounded shadow-sm mb-2" alt="Imagem do sneaker">
             <input type="text" class="form-control d-none" data-img-target="gallery-img-${count}">
+            <input type="file" accept="image/*" class="form-control mb-2 image-upload-input">
             <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
         `;
         container.appendChild(col);
 
-        col.querySelector("input").addEventListener("input", function () {
-            const img = document.getElementById(this.getAttribute("data-img-target"));
-            if (img) img.src = this.value;
+        const fileInput = col.querySelector(".image-upload-input");
+        const preview = col.querySelector("img");
+
+        fileInput.addEventListener("change", function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         });
     });
+
 </script>
 
 <script>
@@ -539,11 +550,44 @@
             suggestion: []
         };
 
-        // Imagens principais
-        document.querySelectorAll('#image-gallery input[data-img-target]').forEach(input => {
-            const url = input.value.trim();
+        const sneakerName = sneaker.model;
+        const sneakerSku = sneaker.code;
+
+        // 1. Upload de imagens principais da galeria
+        const galleryItems = document.querySelectorAll('#image-gallery .col-6');
+        for (const col of galleryItems) {
+            const fileInput = col.querySelector('input[type="file"]');
+            const hiddenInput = col.querySelector('input[type="text"]');
+
+            if (fileInput && fileInput.files.length > 0) {
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+                formData.append("sneaker_name", sneakerName);
+                formData.append("sneaker_sku", sneakerSku);
+
+                try {
+                    const res = await fetch("/sneaker/upload-file", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        hiddenInput.value = data.file_url;
+                    } else {
+                        alert("Erro ao fazer upload da imagem: " + data.error);
+                        return;
+                    }
+                } catch (err) {
+                    alert("Erro ao enviar imagem.");
+                    console.error(err);
+                    return;
+                }
+            }
+
+            const url = hiddenInput.value.trim();
             if (url) sneaker.images.push(url);
-        });
+        }
 
         // Variações de cor
         document.querySelectorAll('#color-variation .col-6').forEach(col => {

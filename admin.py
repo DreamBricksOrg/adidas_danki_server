@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, jsonify
 import json
 from utils.boto import upload_file_blob_to_s3
 import os
+import random
 
 admin = Blueprint('admin', __name__)
 
@@ -32,6 +33,7 @@ def scan_tag_page():
 @admin.route("/sneaker/upload-file", methods=["POST"])
 def upload_image():
     TEST_BUCKET = os.getenv("TEST_S3_BUCKET")
+
     if "file" not in request.files:
         return jsonify({"error": "Nenhum arquivo enviado"}), 400
 
@@ -40,7 +42,21 @@ def upload_image():
     if file.filename == "":
         return jsonify({"error": "Nome do arquivo inválido"}), 400
 
-    s3_key = f"uploads/{file.filename}"
+    # Validação dos argumentos
+    sneaker_name = request.form.get("sneaker_name")
+    sneaker_sku = request.form.get("sneaker_sku")
+
+    if not sneaker_name or not sneaker_sku:
+        return jsonify({"error": "Parâmetros 'sneaker_name' e 'sneaker_sku' são obrigatórios"}), 400
+
+    # Pegando extensão do arquivo (ex: '.jpg', '.png', etc.)
+    _, file_extension = os.path.splitext(file.filename)
+
+    # Geração de código aleatório e criação da key com extensão
+    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    s3_key = f"{sneaker_name}/{sneaker_sku}_{code}{file_extension}"
+
+    # Upload para o S3
     file_url = upload_file_blob_to_s3(file, TEST_BUCKET, s3_key)
 
     if file_url:

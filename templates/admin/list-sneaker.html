@@ -12,6 +12,8 @@
 </head>
 <body>
 <h2>Lista de Tênis</h2>
+
+<input type="text" id="search-input" placeholder="Buscar por modelo, código ou tag..." style="margin-bottom: 10px; padding: 5px; width: 300px;">
 <div id="sneaker-table"></div>
 
 <script>
@@ -55,6 +57,20 @@
             }
         ]
     });
+
+    document.getElementById("search-input").addEventListener("input", function() {
+        const value = this.value.toLowerCase();
+
+        table.setFilter(function(data, filterParams) {
+            const matchText = (str) => str && str.toLowerCase().includes(value);
+
+            const matchTags = data.tag && Array.isArray(data.tag) &&
+            data.tag.some(t => t.tagAddress && t.tagAddress.toLowerCase().includes(value));
+
+            return matchText(data.model) || matchText(data.code) || matchTags;
+        });
+    });
+
 </script>
 
 </body>
