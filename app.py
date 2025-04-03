@@ -665,6 +665,48 @@ def get_images_by_shoeid(shoe_id):
         return Response(json_util.dumps({"error": str(e)}), status=400, mimetype='application/json')
 
 
+@app.route('/update-shoe-full', methods=['PUT'])
+def update_shoe_full():
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    try:
+        shoe_id = ObjectId(data['_id'])
+
+        # Atualiza a collection "shoes"
+        shoe_update = {
+            "code": data["code"],
+            "model": data["model"],
+            "title": data["title"],
+            "description": data["description"],
+            "colors": [ObjectId(color["shoeId"]) for color in data.get("colors", [])]
+        }
+        db.shoes.update_one({"_id": shoe_id}, {"$set": shoe_update})
+
+        # Atualiza ou insere em "images"
+        db.images.update_one(
+            {"shoeId": shoe_id},
+            {"$set": {"links": data.get("images", [])}},
+            upsert=True
+        )
+
+        # Atualiza ou insere em "suggestion"
+        db.suggestion.update_one(
+            {"shoeId": shoe_id},
+            {"$set": {
+                "shoes": [ObjectId(sug["shoeId"]) for sug in data.get("suggestion", [])]
+            }},
+            upsert=True
+        )
+
+        return jsonify({"message": "Shoe, images, and suggestions updated successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 
 # =======================================

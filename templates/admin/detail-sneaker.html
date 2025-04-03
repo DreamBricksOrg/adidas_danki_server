@@ -148,7 +148,6 @@
             <div class="col-6 col-md-4 mb-4">
                 <img id="gallery-img-{{ loop.index }}" src="{{ img }}" class="img-fluid rounded shadow-sm mb-2"
                      alt="Imagem do sneaker">
-                <label>URL da Imagem</label>
                 <input type="text" class="form-control" value="{{ img }}"
                        data-img-target="gallery-img-{{ loop.index }}">
                 <button class="btn btn-sm btn-danger remove-item mt-2">Excluir</button>
@@ -178,7 +177,7 @@
                 <label>Código da Cor</label>
                 <input type="text" class="form-control mb-2" value="{{ color.code }}">
 
-                 <input type="hidden" class="shoe-id-hidden" value="{{ color.shoeId }}">
+                <input type="hidden" class="shoe-id-hidden" value="{{ color.shoeId }}">
 
                 <label>Selecionar Tênis</label>
                 <select class="form-select sneaker-dropdown" data-img-id="color-img-{{ loop.index }}">
@@ -226,7 +225,8 @@
     </div>
 
     <div class="text-center mb-5">
-        <button onclick="printSneakerObject()" class="btn btn-success">Imprimir Objeto Atual</button>
+<!--        <button onclick="printSneakerObject()" class="btn btn-success">Imprimir Objeto Atual</button>-->
+        <button class="btn btn-primary" onclick="updateSneaker()">Salvar alterações</button>
     </div>
 
 
@@ -516,6 +516,74 @@
         alert("Objeto sneaker atualizado foi impresso no console.");
     }
 
+</script>
+
+<script>
+    async function updateSneaker() {
+        const sneaker = {
+            _id: "{{ sneaker._id }}",
+            code: "{{ sneaker.code }}",
+            model: document.getElementById("modelInput").value.trim(),
+            title: document.getElementById("titleInput").value.trim(),
+            description: document.getElementById("descriptionInput").value.trim(),
+            images: [],
+            colors: [],
+            suggestion: []
+        };
+
+        // Imagens principais
+        document.querySelectorAll('#image-gallery input[data-img-target]').forEach(input => {
+            const url = input.value.trim();
+            if (url) sneaker.images.push(url);
+        });
+
+        // Variações de cor
+        document.querySelectorAll('#color-variation .col-6').forEach(col => {
+            const image = col.querySelector('input[data-img-target]').value.trim();
+            const model = col.querySelector('input:nth-of-type(2)').value.trim();
+            const code = col.querySelector('input:nth-of-type(3)').value.trim();
+            const shoeId = col.querySelector('.shoe-id-hidden')?.value.trim();
+
+            if (image && model && code && shoeId) {
+                sneaker.colors.push({ image, model, code, shoeId });
+            }
+        });
+
+        // Sugestões
+        document.querySelectorAll('#suggestion-section .col-6').forEach(col => {
+            const image = col.querySelector('input[data-img-target]').value.trim();
+            const model = col.querySelector('input:nth-of-type(2)').value.trim();
+            const code = col.querySelector('input:nth-of-type(3)').value.trim();
+            const shoeId = col.querySelector('.shoe-id-hidden')?.value.trim();
+
+            if (image && model && code && shoeId) {
+                sneaker.suggestion.push({ image, model, code, shoeId });
+            }
+        });
+
+        try {
+            const response = await fetch('/update-shoe-full', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(sneaker)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("Tênis atualizado com sucesso!");
+                console.log("✅ Resposta:", result);
+            } else {
+                alert("Erro ao atualizar o tênis: " + result.error);
+                console.error("❌ Erro:", result);
+            }
+        } catch (error) {
+            alert("Erro ao conectar com o servidor.");
+            console.error("❌ Erro de conexão:", error);
+        }
+    }
 </script>
 
 </body>
