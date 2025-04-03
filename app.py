@@ -6,6 +6,8 @@
 from flask import request, jsonify, Response
 from bson import ObjectId, json_util
 from bson.json_util import dumps
+import os
+from dotenv import load_dotenv
 
 from admin import admin
 from database import apply_schemas
@@ -15,6 +17,8 @@ from pymongo.server_api import ServerApi
 import logging
 import requests
 from flask_cors import CORS
+
+load_dotenv()
 
 # =======================================
 # Variables
@@ -41,8 +45,7 @@ def create_app():
     """
     app = Flask(__name__)
     # MongoDB URI configuration from environment or default setup
-    app.config['MONGO_URI'] = "mongodb+srv://guilhermebegotti:n5BHAuwiY1j3FxaF@dbcluster0.qkxkj.mongodb.net/?retryWrites=true&w=majority&appName=DBCluster0"
-    # app.config['MONGO_URI'] = "mongodb://A7b9C3dE1F:G4h8J2kL6M@localhost:27017/?authSource=admin&retryWrites=true"
+    app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 
     app.register_blueprint(admin)
 
