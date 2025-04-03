@@ -125,9 +125,13 @@
 <div class="container my-5">
     <!-- Título e Modelo -->
     <div class="text-center mb-4">
-        <label for="modelInput">Modelo do Sneaker</label>
+        <label for="modelInput">Modelo do Tenis</label>
         <input id="modelInput" type="text" class="form-control text-center sneaker-title mb-2"
                value="{{ sneaker.model }}">
+
+        <label for="codeInput">Código do Tenis</label>
+        <input id="codeInput" type="text" class="form-control text-center sneaker-title mb-2"
+               value="{{ sneaker.code }}">
 
         <label for="titleInput">Título</label>
         <input id="titleInput" type="text" class="form-control text-center text-muted" value="{{ sneaker.title }}">
@@ -473,7 +477,7 @@
     function printSneakerObject() {
         const sneaker = {
             _id: "{{ sneaker._id }}",
-            code: "{{ sneaker.code }}",
+            code: document.getElementById("codeInput").value.trim(),
             model: document.getElementById("modelInput").value.trim(),
             title: document.getElementById("titleInput").value.trim(),
             description: document.getElementById("descriptionInput").value.trim(),
@@ -522,7 +526,7 @@
     async function updateSneaker() {
         const sneaker = {
             _id: "{{ sneaker._id }}",
-            code: "{{ sneaker.code }}",
+            code: document.getElementById("codeInput").value.trim(),
             model: document.getElementById("modelInput").value.trim(),
             title: document.getElementById("titleInput").value.trim(),
             description: document.getElementById("descriptionInput").value.trim(),
@@ -575,6 +579,7 @@
             if (response.ok) {
                 alert("Tênis atualizado com sucesso!");
                 console.log("✅ Resposta:", result);
+                window.location.href = "/";
             } else {
                 alert("Erro ao atualizar o tênis: " + result.error);
                 console.error("❌ Erro:", result);

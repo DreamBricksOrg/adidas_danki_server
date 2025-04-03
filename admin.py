@@ -17,7 +17,7 @@ def sneaker_detail_page():
 
 @admin.route('/sneaker/create')
 def sneaker_create_page():
-    return render_template('admin.create-sneaker.html')
+    return render_template('admin/create-sneaker.html')
 
 @admin.route('/sneaker/assign-tag')
 def sneaker_assign_tag():
