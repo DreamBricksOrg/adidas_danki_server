@@ -1,6 +1,7 @@
 # =======================================
 # Library Imports
 # =======================================
+from lib2to3.fixes.fix_input import context
 
 # Import necessary modules for creating a Flask application with MongoDB
 from flask import request, jsonify, Response
@@ -698,4 +699,5 @@ def update_shoe_full():
 if __name__ == "__main__":
     # Run the Flask application
     logger.info("Starting Flask application...")
-    app.run(host='0.0.0.0', port=5050)
+    context = ('static/fullchain.pem', 'static/privkey.pem')
+    app.run(host='0.0.0.0', port=5050, ssl_context=context)
