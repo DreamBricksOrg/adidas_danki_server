@@ -17,6 +17,7 @@ from pymongo.server_api import ServerApi
 import logging
 import requests
 from flask_cors import CORS
+from utils.pinterest import get_pins, upload_images_to_s3, save_to_mongo
 
 load_dotenv()
 
@@ -104,32 +105,6 @@ def convert_object_ids(data):
     elif isinstance(data, list):
         return [convert_object_ids(item) for item in data]
     return data
-
-
-def fetch_pinterest_data(board_id, access_token):
-    """
-    Fetches media data from a Pinterest board using the Pinterest API.
-
-    Args:
-        board_id (str): The unique identifier of the Pinterest board.
-        access_token (str): Access token to authenticate with the Pinterest API.
-
-    Returns:
-        dict: Media data from the board, including image URLs, or None if the request fails.
-    """
-    url = f"https://api.pinterest.com/v5/boards/{board_id}"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    try:
-        # Make the API request to fetch board data
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        # Parse and return the media data
-        data = response.json()
-        return data.get("media", None)
-    except requests.RequestException as e:
-        # Log and return None if the request fails
-        logger.error(f"Failed to fetch Pinterest data: {e}")
-        return None
 
 
 # =======================================
@@ -432,54 +407,56 @@ def add_pinterest_data():
     Returns:
         JSON response indicating success or failure.
     """
-    payload = request.json
-    board_id = payload.get("board_id")
-    access_token = payload.get("access_token")
-    shoe_id = payload.get("shoe_id")
-    code = payload.get("code")
-    model = payload.get("model")
-
-    # Validate the required parameters
-    if not (board_id and access_token):
-        return jsonify({"error": "board_id and access_token are required"}), 400
-
-    # Fetch media data from the Pinterest API
-    media_data = fetch_pinterest_data(board_id, access_token)
-    if not media_data:
-        return jsonify({"error": "Failed to fetch Pinterest data"}), 500
-
-    # Build the query to find the associated shoe
-    query = {}
-    if shoe_id:
-        query["_id"] = ObjectId(shoe_id)
-    elif code:
-        query["code"] = code
-    elif model:
-        query["model"] = model
-    else:
-        return jsonify({"error": "Provide shoe_id, code, or model to identify the shoe"}), 400
-
-    # Search for the shoe in the database
-    shoe = db['shoes'].find_one(query)
-    if not shoe:
-        return jsonify({"error": "Shoe not found"}), 404
-
-    # Prepare the Pinterest document to insert/update
-    pinterest_document = {
-        "Shoe": shoe["_id"],  # Link the Pinterest data to the shoe's ObjectId
-        "links": [media_data["image_cover_url"]] + media_data.get("pin_thumbnail_urls", [])
-    }
-
     try:
-        # Update or insert the Pinterest document for the shoe
-        result = db['pinterest'].update_one(
-            {"Shoe": shoe["_id"]},  # Match by the shoe's ObjectId
-            {"$set": pinterest_document},  # Update the document fields
-            upsert=True  # Insert if no matching document is found
-        )
-        logger.info(f"Pinterest data added/updated for shoe {shoe['_id']}")
-        return jsonify({"message": "Pinterest data added/updated successfully",
-                        "result": str(result.upserted_id or shoe["_id"])}), 200
+
+        data = request.json
+        shoe_id = data.get("shoe_id")
+
+        # Build the query to find the associated shoe
+        query = {}
+        if shoe_id:
+            query["_id"] = ObjectId(shoe_id)
+        else:
+            return jsonify({"error": "Provide valid shoe_id"}), 400
+
+        # Search for the shoe in the database
+        shoe = db['shoes'].find_one(query)
+        if not shoe:
+            return jsonify({"error": "Shoe not found"}), 404
+
+        board_id = shoe["pinterestId"]
+        folder_name = shoe["model"]
+
+        logger.info(f"Processando board: {board_id}")
+
+        # Cria pasta temporária
+        local_folder = f"./temp/{folder_name}"
+        os.makedirs(local_folder, exist_ok=True)
+
+        # Faz o scraping das imagens
+        image_paths = get_pins(board_id, local_folder, shoe_id)
+
+        # Faz o upload das imagens para o S3
+        uploaded_urls = upload_images_to_s3(image_paths, folder_name)
+
+        # Salva os links no MongoDB
+        save_to_mongo(shoe_id, uploaded_urls)
+
+        # Limpa os arquivos locais
+        for image_path in image_paths:
+            try:
+                os.remove(image_path)  # Remove arquivos individuais
+            except Exception as e:
+                logger.error(f"Erro ao remover arquivo {image_path}: {e}")
+        
+        # Remove a pasta temporária, mas sem afetar pastas no S3
+        try:
+            os.rmdir(local_folder)
+        except Exception as e:
+            logger.error(f"Erro ao remover a pasta {local_folder}: {e}")
+        
+        logger.info(f"Pinterest data added/updated for shoe {shoe_id}")
+        return jsonify({"message": "Pinterest data added/updated successfully"}), 200
     except Exception as e:
         # Log and return an error response if the operation fails
         logger.error(f"Failed to add/update Pinterest data: {e}")
