@@ -36,6 +36,10 @@ def sneaker_create_page():
 def scan_tag_page():
     return render_template('admin/scan-tag.html')
 
+@admin.route('/sneaker/reports')
+def reports_tag_page():
+    return render_template('admin/reports-tag.html')
+
 
 @admin.route("/sneaker/upload-file", methods=["POST"])
 def upload_image():
@@ -97,4 +101,33 @@ def get_pinterest_boards():
         return jsonify({"items": boards}), 200
 
     except requests.exceptions.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@admin.route("/dados-danki")
+def dados_danki():
+    url = "https://dbutils.ddns.net/datalog/getdatabyproject?project=danki_adidas"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json().get("data", [])
+
+        parsed_data = []
+        for item in data:
+            parts = item.get("additional", "").split(",")
+            if len(parts) >= 6:
+                parsed_data.append({
+                    "mac": parts[0],
+                    "data_inicio": parts[1],
+                    "data_fim": parts[2],
+                    "duracao": parts[3],
+                    "codigo": parts[4],
+                    "modelo": parts[5],
+                    "status": item.get("status", ""),
+                    "uploadedData": item.get("uploadedData", ""),
+                    "timePlayed": item.get("timePlayed", "")
+                })
+        return jsonify(parsed_data)
+
+    except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
