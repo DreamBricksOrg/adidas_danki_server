@@ -72,6 +72,7 @@ def create_app():
 
 # Initialize the Flask application and MongoDB database from the database module
 app = create_app()
+app.config['MAX_CONTENT_LENGTH'] = 3 * 1024 * 1024 * 1024  # 3GB
 CORS(app)
 db = app.db
 
