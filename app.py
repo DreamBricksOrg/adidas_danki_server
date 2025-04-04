@@ -383,7 +383,8 @@ def get_shoe_details():
             "colors": color_details,
             "images": image_links,
             "pinterest": pinterest_links,
-            "suggestion": suggestion_details
+            "suggestion": suggestion_details,
+            "pinterestId": shoe_details.get('pinterestId')
         }
 
         json_result = dumps(result)
@@ -661,7 +662,8 @@ def update_shoe_full():
             "model": data["model"],
             "title": data["title"],
             "description": data["description"],
-            "colors": [ObjectId(color["shoeId"]) for color in data.get("colors", [])]
+            "colors": [ObjectId(color["shoeId"]) for color in data.get("colors", [])],
+            "pinterestId": data["pinterestId"]
         }
         db.shoes.update_one({"_id": shoe_id}, {"$set": shoe_update})
 

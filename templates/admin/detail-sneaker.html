@@ -228,6 +228,14 @@
 
     </div>
 
+    <div class="mb-5">
+        <label for="pinterest-board">Board do Pinterest</label>
+        <select id="pinterest-board" class="form-select">
+            <option value=""> -- Selecione um board -- </option>
+        </select>
+        <input type="hidden" id="pinterest-board-id" name="pinterest-board-id">
+    </div>
+
     <div class="text-center mb-5">
 <!--        <button onclick="printSneakerObject()" class="btn btn-success">Imprimir Objeto Atual</button>-->
         <button class="btn btn-primary" onclick="updateSneaker()">Salvar alterações</button>
@@ -352,12 +360,12 @@
 
 <script>
     document.getElementById("add-suggestion")?.addEventListener("click", function () {
-    const container = document.getElementById("suggestion-section");
+        const container = document.getElementById("suggestion-section");
 
-    if (container.children.length >= 3) {
-        alert("Máximo de 3 sugestões permitidas.");
-        return;
-    }
+        if (container.children.length >= 3) {
+            alert("Máximo de 3 sugestões permitidas.");
+            return;
+        }
 
         const count = container.children.length + 1;
 
@@ -498,7 +506,8 @@
             description: document.getElementById("descriptionInput").value.trim(),
             images: [],
             colors: [],
-            suggestion: []
+            suggestion: [],
+            pinterestId: document.getElementById("pinterest-board-id").value.trim()
         };
 
         // Imagens principais
@@ -547,7 +556,8 @@
             description: document.getElementById("descriptionInput").value.trim(),
             images: [],
             colors: [],
-            suggestion: []
+            suggestion: [],
+            pinterestId: document.getElementById("pinterest-board-id").value.trim()
         };
 
         const sneakerName = sneaker.model;
@@ -637,6 +647,58 @@
             console.error("❌ Erro de conexão:", error);
         }
     }
+</script>
+
+<script>
+    async function loadPinterestBoards() {
+        try {
+            const res = await fetch("/pinterest/boards");
+            const data = await res.json();
+            const select = document.getElementById("pinterest-board");
+
+            // Preencher o dropdown com os boards
+            data.items.forEach((board, index) => {
+                const option = document.createElement("option");
+                option.value = board.id;
+                option.setAttribute("data-image", board.image_cover_url || '');
+                option.text = board.name;
+                select.appendChild(option);
+            });
+
+            // Inicializar Select2 com imagens
+            $('#pinterest-board').select2({
+                templateResult: formatBoardOption,
+                templateSelection: formatBoardOption,
+                width: '100%'
+            });
+
+            // Selecionar automaticamente o board atual do sneaker (se houver)
+            const currentPinterestId = "{{ sneaker.pinterestId }}";
+            if (currentPinterestId) {
+                $('#pinterest-board').val(currentPinterestId).trigger('change');
+                document.getElementById("pinterest-board-id").value = currentPinterestId;
+            }
+
+            // Atualizar o input hidden quando o usuário muda a seleção
+            $('#pinterest-board').on('select2:select', function (e) {
+                const id = e.params.data.id;
+                document.getElementById("pinterest-board-id").value = id;
+            });
+
+        } catch (err) {
+            console.error("Erro ao buscar boards do Pinterest:", err);
+        }
+    }
+
+    function formatBoardOption(state) {
+        if (!state.id) return state.text;
+        const img = $(state.element).data('image');
+        if (!img) return state.text;
+
+        return $(`<span><img src="${img}" style="height: 30px; margin-right: 8px;"> ${state.text}</span>`);
+    }
+
+    loadPinterestBoards();
 </script>
 
 </body>
