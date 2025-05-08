@@ -4,6 +4,7 @@ from utils.boto import upload_file_blob_to_s3
 import os
 import random
 import requests
+from dateutil.parser import parse
 
 admin = Blueprint('admin', __name__)
 
@@ -127,6 +128,9 @@ def dados_danki():
                     "uploadedData": item.get("uploadedData", ""),
                     "timePlayed": item.get("timePlayed", "")
                 })
+
+        parsed_data.sort(key=lambda x: parse(x["data_inicio"]), reverse=True)
+
         return jsonify(parsed_data)
 
     except requests.RequestException as e:

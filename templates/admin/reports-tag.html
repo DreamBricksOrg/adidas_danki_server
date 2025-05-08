@@ -37,6 +37,13 @@
         </button>
     </div>
 
+    <div id="loading-spinner" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p>Carregando dados...</p>
+    </div>
+
     <div id="log-table"></div>
 </div>
 
@@ -71,9 +78,7 @@
         pagination: "local",
         paginationSize: 20,
         paginationSizeSelector: [20, 50, 100],
-        initialSort: [
-            { column: "data_inicio", dir: "asc" }
-        ],
+
         columns: [
             { title: "MAC", field: "mac" },
             { title: "Data Início", field: "data_inicio" },
@@ -98,6 +103,14 @@
 
     document.getElementById("download-excel").addEventListener("click", function () {
         table.download("xlsx", "logs-danki.xlsx", { sheetName: "LogsDank" });
+    });
+
+    document.getElementById("loading-spinner").style.display = "block";
+
+    fetchData().then(data => {
+        table.setData(data);
+    }).finally(() => {
+        document.getElementById("loading-spinner").style.display = "none";
     });
 </script>
 
