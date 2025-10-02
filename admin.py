@@ -113,8 +113,10 @@ def dados_danki():
         response.raise_for_status()
         data = response.json().get("data", [])
 
+        filtered_data = [item for item in data if item.get("status", "") == "MEXEU"]
+
         parsed_data = []
-        for item in data:
+        for item in filtered_data:
             parts = item.get("additional", "").split(",")
             if len(parts) >= 6:
                 parsed_data.append({
